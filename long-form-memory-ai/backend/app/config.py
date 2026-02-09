@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     
     # MongoDB
-    MONGODB_URL: str = "mongodb://localhost:27017/memory_ai"
+
+    MONGODB_URL: str = "mongodb://localhost:27017/rag_chat_app"
+
     
     # Redis (optional)
     REDIS_URL: str = "redis://localhost:6379/0"

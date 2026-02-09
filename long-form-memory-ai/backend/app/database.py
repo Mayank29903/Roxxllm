@@ -11,7 +11,10 @@ client = None
 async def init_db():
     """Initialize MongoDB connection."""
     global client
-    client = AsyncIOMotorClient(settings.MONGODB_URL)
+
+    client = client = AsyncIOMotorClient("mongodb://localhost:27017/rag_chat_app")
+
+
     await init_beanie(
         database=client.get_default_database(),
         document_models=[User, Conversation, Message, Memory]
