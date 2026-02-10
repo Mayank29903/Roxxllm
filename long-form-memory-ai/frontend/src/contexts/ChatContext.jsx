@@ -108,6 +108,15 @@ export const ChatProvider = ({ children }) => {
         turn_count: (prev.turn_count || 0) + 1
       }))
 
+      // Update conversation in the list
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === currentConversation.id 
+            ? { ...conv, turn_count: (conv.turn_count || 0) + 1 }
+            : conv
+        )
+      )
+
     } catch (err) {
       console.error('Failed to send message:', err)
       // Remove optimistic message on error

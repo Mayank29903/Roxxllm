@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     # MongoDB
     MONGODB_URL: str = Field(
-        default="mongodb://localhost:27017/rag_chat_app",
+        default="mongodb://localhost:27017/longform_memory_ai",
         alias="MONGODB_URL"
     )
 
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 
     # OpenRouter model name
-    LLM_MODEL: str = "openai/gpt-oss-120b:free"
+    LLM_MODEL: str = "openai/gpt-4o-mini"
 
     # Embeddings
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
