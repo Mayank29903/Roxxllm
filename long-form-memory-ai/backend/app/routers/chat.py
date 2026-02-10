@@ -97,3 +97,18 @@ async def send_message(
         ):
             result = event
         return result
+
+
+@router.delete("/conversations/{conversation_id}")
+async def delete_conversation(
+    conversation_id: str,
+    current_user: User = Depends(get_current_user_dependency),
+):
+    """
+    Delete a conversation and ALL its associated memories.
+    """
+    await chat_service.delete_conversation(
+        conversation_id=conversation_id,
+        user_id=str(current_user.id)
+    )
+    return {"success": True, "message": "Conversation and all associated memories deleted"}

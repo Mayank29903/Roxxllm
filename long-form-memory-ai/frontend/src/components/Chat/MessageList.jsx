@@ -45,15 +45,6 @@ const MessageList = ({ messages, streamingMessage, isLoading }) => {
                   {message.content}
                 </ReactMarkdown>
               </div>
-              
-              {/* Memory indicator */}
-              {message.active_memories && message.active_memories.length > 0 && (
-                <div className="mt-2 flex items-center space-x-2">
-                  <span className="text-xs text-amber-600 font-medium bg-amber-100 px-2 py-1 rounded-full">
-                    💡 Used {message.active_memories.length} memories
-                  </span>
-                </div>
-              )}
             </div>
           </div>
         </div>

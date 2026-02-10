@@ -26,6 +26,11 @@ Extract memories in these categories:
 5. **instruction**: Explicit instructions on how to behave or respond
 6. **constraint**: Limitations, restrictions, boundaries
 
+Also extract GENERAL PREFERENCE RULES when the user expresses a broad pattern.
+Examples:
+- "In any anime, my favorite character is the main character" -> preference key: favorite_anime_character_type, value: main character
+- "I usually prefer vegetarian food" -> preference key: dietary_preference, value: vegetarian
+
 For each memory found, provide:
 - type: One of the categories above
 - key: Short semantic identifier (e.g., "language_preference", "call_time")
@@ -120,8 +125,26 @@ Example:
         required = ['type', 'key', 'value', 'confidence', 'importance']
         return all(field in memory for field in required)
     
-    def should_extract(self, turn_number: int) -> bool:
+    def should_extract(self, turn_number: int, user_message: Optional[str] = None) -> bool:
         """Determine if we should run extraction on this turn."""
         # Extract on specific turns to balance performance and coverage
         # Turn 1 (initial preferences), then every 5 turns, and every 50th turn
-        return turn_number == 1 or turn_number % 5 == 0 or turn_number % 50 == 0
+        if turn_number == 1 or turn_number % 5 == 0 or turn_number % 50 == 0:
+            return True
+
+        return self._has_memory_signal(user_message)
+
+    def _has_memory_signal(self, user_message: Optional[str]) -> bool:
+        """Lightweight heuristic to detect messages likely containing memories."""
+        if not user_message:
+            return False
+
+        message = user_message.lower()
+        signals = [
+            "my name", "i am", "i'm", "call me", "you can call me",
+            "i go to", "i study", "i work", "i live", "i am from",
+            "my favorite", "i like", "i love", "i hate", "i prefer",
+            "language", "speak", "remember", "my birthday", "my age"
+        ]
+
+        return any(signal in message for signal in signals)
