@@ -72,5 +72,10 @@ export const chatService = {
     }
 
     return finalData || { message: { content: fullMessage } }
+  },
+
+  deleteConversation: async (conversationId) => {
+    const response = await api.delete(`/chat/conversations/${conversationId}`)
+    return response.data
   }
 }

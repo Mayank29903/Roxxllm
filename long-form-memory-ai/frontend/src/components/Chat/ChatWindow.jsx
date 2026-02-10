@@ -15,6 +15,7 @@ const ChatWindow = () => {
     loadConversations,
     createConversation,
     selectConversation,
+    deleteConversation,
     sendMessage
   } = useChat()
 
@@ -44,6 +45,7 @@ const ChatWindow = () => {
         currentConversation={currentConversation}
         onSelectConversation={selectConversation}
         onNewChat={handleNewChat}
+        onDeleteConversation={deleteConversation}
       />
 
       {/* Main Chat Area */}

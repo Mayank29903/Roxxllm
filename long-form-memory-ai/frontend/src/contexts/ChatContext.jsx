@@ -49,6 +49,26 @@ export const ChatProvider = ({ children }) => {
     await loadMessages(conversation.id)
   }, [loadMessages])
 
+  const deleteConversation = useCallback(async (conversationId) => {
+    try {
+      await chatService.deleteConversation(conversationId)
+      
+      // Remove from list
+      setConversations(prev => prev.filter(conv => conv.id !== conversationId))
+      
+      // If it was the current conversation, clear it
+      if (currentConversation?.id === conversationId) {
+        setCurrentConversation(null)
+        setMessages([])
+      }
+      
+      console.log('✅ Conversation and all memories deleted')
+    } catch (err) {
+      console.error('Failed to delete conversation:', err)
+      throw err
+    }
+  }, [currentConversation])
+
   const sendMessage = useCallback(async (content, stream = true) => {
     if (!currentConversation) {
       await createConversation()
@@ -136,6 +156,7 @@ export const ChatProvider = ({ children }) => {
     loadConversations,
     createConversation,
     selectConversation,
+    deleteConversation,
     sendMessage,
     loadMessages
   }

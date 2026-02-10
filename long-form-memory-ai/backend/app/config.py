@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     # OpenRouter model name
     LLM_MODEL: str = "openai/gpt-4o-mini"
 
+    # Gemini (direct API)
+    GEMINI_API_KEY: str = Field(default="", alias="GEMINI_API_KEY")
+    GEMINI_BASE_URL: str = "https://generativelanguage.googleapis.com/v1beta"
+    GEMINI_MODEL: str = "gemini-1.5-flash"
+
     # Embeddings
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 

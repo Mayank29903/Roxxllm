@@ -20,7 +20,10 @@ class LLMService:
     async def generate_response(
         self,
         messages: List[Dict[str, str]],
-        stream: bool = False
+        stream: bool = False,
+        max_tokens: int = None,
+        temperature: float = None,
+        top_p: float = None
     ) -> AsyncGenerator[Dict[str, str], None]:
 
         payload = {
@@ -28,6 +31,13 @@ class LLMService:
             "messages": messages,
             "stream": stream,
         }
+
+        if max_tokens is not None:
+            payload["max_tokens"] = max_tokens
+        if temperature is not None:
+            payload["temperature"] = temperature
+        if top_p is not None:
+            payload["top_p"] = top_p
 
         # ---------- DEBUG: REQUEST ----------
         print("\n========== LLM REQUEST ==========")
