@@ -45,7 +45,7 @@ class MemoryService:
         memory_type: Optional[str] = None,
         limit: int = 100
     ) -> List[Memory]:
-        """Get all active memories for a user."""
+        """Get all active memories for a user, sorted by importance."""
 
         query = Memory.find(
             Memory.user_id == user_id,
@@ -55,7 +55,8 @@ class MemoryService:
         if memory_type:
             query = query.find(Memory.memory_type == memory_type)
 
-        memories = await query.limit(limit).to_list()
+        # Sort by importance score (descending) to get most important memories first
+        memories = await query.sort("-importance_score").limit(limit).to_list()
         return memories
 
     async def search_memories(
