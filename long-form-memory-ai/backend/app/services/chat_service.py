@@ -3,11 +3,31 @@ from datetime import datetime
 from fastapi import HTTPException
 from app.models.chat import Conversation, Message
 from app.services.llm_service import LLMService
+from app.services.memory_service import MemoryService
+from app.core.memory_extractor import MemoryExtractor
 
 
 class ChatService:
     def __init__(self):
         self.llm_service = LLMService()
+        self.memory_service = MemoryService()
+        self.memory_extractor = MemoryExtractor()
+
+    def _format_memories_for_context(self, memories: List[Any]) -> str:
+        """Format memories for injection into LLM context."""
+        if not memories:
+            return ""
+        
+        lines = ["You have access to the following information from previous conversations with this user:"]
+        lines.append("")
+        
+        for mem in memories:
+            lines.append(f"- [{mem.memory_type.upper()}] {mem.key}: {mem.value}")
+        
+        lines.append("")
+        lines.append("Use this information naturally when relevant to the conversation. Don't mention that you have access to this context unless directly asked.")
+        
+        return "\n".join(lines)
 
     async def create_conversation(
         self,
@@ -116,6 +136,28 @@ class ChatService:
             for m in history
         ]
 
+        # Retrieve relevant memories from past conversations
+        memories = await self.memory_service.get_user_memories(
+            user_id=user_id,
+            limit=10
+        )
+        
+        active_memory_ids = []
+        
+        # Format memories and inject into context if any exist
+        if memories:
+            memory_context = self._format_memories_for_context(memories)
+            # Inject memory context as a system message before the conversation
+            messages = [
+                {"role": "system", "content": memory_context}
+            ] + messages
+            active_memory_ids = [str(m.id) for m in memories]
+            
+            print("\n===== ACTIVE MEMORIES =====")
+            for m in memories:
+                print(f"  [{m.memory_type}] {m.key}: {m.value}")
+            print("===========================\n")
+
         print("\n===== CONTEXT TO LLM =====")
         for m in messages:
             print(m)
@@ -151,9 +193,40 @@ class ChatService:
             conversation_id=conversation_id,
             turn_number=conv.turn_count,
             role="assistant",
-            content=full_response
+            content=full_response,
+            active_memories=active_memory_ids
         )
         await assistant_msg.insert()
+
+        # Extract and store memories from this conversation turn
+        if self.memory_extractor.should_extract(conv.turn_count):
+            try:
+                extracted = await self.memory_extractor.extract_memories(
+                    user_message=content,
+                    assistant_response=full_response,
+                    turn_number=conv.turn_count,
+                    conversation_history=[{"role": m.role, "content": m.content} for m in history[-5:]]
+                )
+                
+                if extracted:
+                    print(f"\n===== EXTRACTED {len(extracted)} MEMORIES =====")
+                    for mem in extracted:
+                        print(f"  [{mem['type']}] {mem['key']}: {mem['value']}")
+                        # Store in database
+                        await self.memory_service.create_memory(
+                            user_id=user_id,
+                            memory_type=mem['type'],
+                            key=mem['key'],
+                            value=mem['value'],
+                            conversation_id=conversation_id,
+                            turn_number=conv.turn_count,
+                            confidence=mem.get('confidence', 0.5),
+                            importance=mem.get('importance', 0.5),
+                            context=f"From conversation turn {conv.turn_count}"
+                        )
+                    print("=========================================\n")
+            except Exception as e:
+                print(f"Memory extraction failed: {e}")
 
         yield {
             "type": "complete",
@@ -162,5 +235,8 @@ class ChatService:
                 "content": full_response,
                 "turn_number": conv.turn_count,
                 "created_at": assistant_msg.created_at.isoformat(),
+            },
+            "memory_metadata": {
+                "active_memories": active_memory_ids
             }
         }
