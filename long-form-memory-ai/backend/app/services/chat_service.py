@@ -198,6 +198,15 @@ class ChatService:
         )
         await assistant_msg.insert()
 
+        # Update memory access statistics for the memories that were used
+        if active_memory_ids:
+            for memory_id in active_memory_ids:
+                await self.memory_service.refresh_memory_access(
+                    memory_id=memory_id,
+                    user_id=user_id,
+                    current_turn=conv.turn_count
+                )
+
         # Extract and store memories from this conversation turn
         if self.memory_extractor.should_extract(conv.turn_count):
             try:
