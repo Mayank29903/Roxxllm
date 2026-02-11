@@ -212,7 +212,7 @@ const ChatWindow = () => {
         } ${isSidebarCollapsed ? 'lg:w-[92px]' : 'lg:w-[320px]'} w-[292px]`}
       />
 
-      <section className="relative flex-1 min-w-0 flex flex-col h-full">
+      <section className="chat-main-surface relative flex-1 min-w-0 flex flex-col h-full">
         <header className="surface-panel rounded-none border-x-0 border-t-0 px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -324,7 +324,7 @@ const ChatWindow = () => {
                   type="button"
                   onClick={confirmDeleteConversation}
                   disabled={isDeletingConversation}
-                  className="rounded-xl px-5 py-2.5 border border-red-400/40 bg-red-500/15 text-red-300 hover:bg-red-500/25 disabled:opacity-60"
+                  className="danger-button delete-conversation-btn rounded-xl px-5 py-2.5 disabled:opacity-60"
                 >
                   {isDeletingConversation ? 'Deleting...' : 'Delete Conversation'}
                 </button>

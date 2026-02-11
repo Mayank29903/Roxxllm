@@ -25,7 +25,7 @@ const Sidebar = ({
   const username = user?.username || 'Guest'
 
   return (
-    <aside className={`flex flex-col h-full surface-panel ${className}`}>
+    <aside className={`sidebar-shell flex flex-col h-full ${className}`}>
       <div className="p-3 md:p-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div className="h-10 w-10 rounded-xl surface-strong flex items-center justify-center">
@@ -33,7 +33,7 @@ const Sidebar = ({
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="text-xs text-muted uppercase tracking-wider">
+              <p className="text-xs text-secondary uppercase tracking-wider">
                 Conversations
               </p>
             </div>
@@ -59,7 +59,7 @@ const Sidebar = ({
       <div className="px-3 md:px-4 pb-3 md:pb-4">
         <button
           onClick={onNewChat}
-          className="accent-button w-full flex items-center justify-center gap-2 px-4 py-3"
+          className="accent-button sidebar-new-chat w-full flex items-center justify-center gap-2 px-4 py-3"
           title="Start a new conversation"
         >
           <PlusIcon className="h-5 w-5" />
@@ -69,7 +69,7 @@ const Sidebar = ({
 
       <div className="flex-1 overflow-y-auto soft-scroll px-2 md:px-3 space-y-1.5">
         {!collapsed && (
-          <div className="px-2 py-1 text-xs font-semibold text-muted uppercase tracking-[0.16em]">
+          <div className="px-2 py-1 text-xs font-semibold text-secondary uppercase tracking-[0.16em]">
             Your Chats
           </div>
         )}
@@ -95,10 +95,10 @@ const Sidebar = ({
 
                 {!collapsed && (
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="text-sm font-medium truncate">
+                    <p className="text-sm font-semibold truncate">
                       {conv.title}
                     </p>
-                    <p className="text-xs text-muted">
+                    <p className="text-xs text-secondary">
                       {formatSidebarIST(conv.created_at)}
                     </p>
                   </div>
@@ -110,7 +110,7 @@ const Sidebar = ({
                   e.stopPropagation()
                   onRequestDeleteConversation(conv)
                 }}
-                className="sidebar-delete-btn p-2 ml-1 text-muted hover:text-red-400 transition-opacity shrink-0"
+                className="sidebar-delete-btn p-2 ml-1 text-[#222831] hover:text-red-400 transition-opacity shrink-0"
                 title="Delete conversation and all memories"
                 aria-label={`Delete ${conv.title}`}
               >
@@ -131,7 +131,7 @@ const Sidebar = ({
           {!collapsed && (
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{username}</p>
-              <p className="text-xs text-muted">Signed in</p>
+              <p className="text-xs sidebar-profile-meta">Signed in</p>
             </div>
           )}
           {collapsed && (

@@ -280,7 +280,7 @@ const MessageList = ({ messages, streamingMessage, isLoading, scrollContainerRef
   const liveStreamingText = animatedStreamingMessage
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto soft-scroll px-3 sm:px-5 py-5">
+    <div ref={scrollContainerRef} className="chat-message-area flex-1 overflow-y-auto soft-scroll px-3 sm:px-5 py-5">
       {messages.length === 0 && !streamingMessage && <EmptyState typing={typing} />}
 
       <div className="max-w-5xl mx-auto space-y-4">
