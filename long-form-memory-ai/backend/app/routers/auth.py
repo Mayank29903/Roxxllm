@@ -2,7 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
-from datetime import timedelta
+from datetime import timedelta, datetime
+from typing import Optional
 
 from app.models.user import User
 from app.services.auth_service import (
@@ -12,6 +13,8 @@ from app.services.auth_service import (
     get_current_user
 )
 from app.config import settings
+from app.services.firebase_service import firebase_service
+from fastapi import HTTPException
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -29,9 +32,16 @@ class UserResponse(BaseModel):
     username: str
 
 
+class GoogleAuthRequest(BaseModel):
+    id_token: str
+    access_token: Optional[str] = None
+    user_info: dict
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+    refresh_token: Optional[str] = None
     user: UserResponse
 
 
@@ -100,6 +110,46 @@ async def get_me(token: str = Depends(oauth2_scheme)):
         "email": user.email,
         "username": user.username
     }
+
+
+@router.post("/google", response_model=Token)
+async def login_with_google(google_data: GoogleAuthRequest):
+    """Authenticate with Google using Firebase ID token."""
+    
+    try:
+        # Verify Firebase ID token
+        firebase_user = await firebase_service.verify_id_token(google_data.id_token)
+        
+        # Create or update user
+        user = await firebase_service.create_or_update_user(
+            firebase_user=firebase_user,
+            user_info=google_data.user_info
+        )
+        
+        # Create access token
+        access_token = create_access_token(
+            data={"sub": str(user.id)},
+            expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        )
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": str(user.id),
+                "email": user.email,
+                "username": user.username
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Google authentication error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Google authentication failed"
+        )
 
 
 async def get_current_user_dependency(

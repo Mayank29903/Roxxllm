@@ -23,8 +23,20 @@ export const authService = {
     return response.data
   },
 
+  loginWithGoogle: async (googleData) => {
+    const response = await api.post('/auth/google', googleData)
+    return response.data
+  },
+
   getMe: async () => {
     const response = await api.get('/auth/me')
+    return response.data
+  },
+
+  refreshToken: async (refreshToken) => {
+    const response = await api.post('/auth/refresh', {
+      refresh_token: refreshToken
+    })
     return response.data
   }
 }
