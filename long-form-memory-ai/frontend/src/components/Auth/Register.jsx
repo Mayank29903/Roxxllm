@@ -46,9 +46,9 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen px-4 py-8 sm:py-12">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-end mb-6">
+    <div className="h-[100dvh] overflow-hidden px-4 py-3 sm:py-4">
+      <div className="relative max-w-6xl mx-auto h-full">
+        <div className="absolute top-0 right-0 z-10">
           <button
             onClick={toggleTheme}
             className="neutral-button p-2"
@@ -59,97 +59,99 @@ const Register = () => {
           </button>
         </div>
 
-        <div className="max-w-md mx-auto surface-panel rounded-3xl p-7 sm:p-9">
-          <div className="text-center">
-            <div className="h-14 w-14 mx-auto rounded-2xl surface-strong flex items-center justify-center glow-ring">
-              <SparklesIcon className="h-7 w-7 text-[var(--accent)]" />
-            </div>
-            <h2 className="mt-5 text-3xl font-semibold">Create Account</h2>
-            <p className="mt-2 text-secondary">Join MemoryAI and keep context across chats</p>
-          </div>
-
-          <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-            {(error || validationError) && (
-              <div className="rounded-xl border border-red-400/40 bg-red-500/10 text-red-300 px-4 py-3 text-sm">
-                {validationError || error}
+        <div className="h-full flex items-center justify-center">
+          <div className="max-w-md w-full mx-auto surface-panel rounded-3xl p-6 sm:p-7">
+            <div className="text-center">
+              <div className="h-14 w-14 mx-auto rounded-2xl surface-strong flex items-center justify-center glow-ring">
+                <SparklesIcon className="h-7 w-7 text-[var(--accent)]" />
               </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1.5">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="input-field px-4 py-2.5"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-              />
+              <h2 className="mt-4 text-3xl font-semibold">Create Account</h2>
+              <p className="mt-1.5 text-secondary">Join MemoryAI and keep context across chats</p>
             </div>
 
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium mb-1.5">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                className="input-field px-4 py-2.5"
-                placeholder="Choose a username"
-                value={formData.username}
-                onChange={handleChange}
-              />
-            </div>
+            <form className="mt-6 space-y-3" onSubmit={handleSubmit}>
+              {(error || validationError) && (
+                <div className="rounded-xl border border-red-400/40 bg-red-500/10 text-red-300 px-4 py-2.5 text-sm">
+                  {validationError || error}
+                </div>
+              )}
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-1.5">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="input-field px-4 py-2.5"
-                placeholder="Create a password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium mb-1">
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="input-field px-4 py-2"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1.5">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                className="input-field px-4 py-2.5"
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-            </div>
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium mb-1">
+                  Username
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  className="input-field px-4 py-2"
+                  placeholder="Choose a username"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+              </div>
 
-            <button type="submit" className="accent-button w-full py-2.5 font-semibold">
-              Create account
-            </button>
-          </form>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium mb-1">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="input-field px-4 py-2"
+                  placeholder="Create a password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </div>
 
-          <p className="text-center mt-6 text-sm text-secondary">
-            Already have an account?{' '}
-            <Link to="/login" className="font-semibold text-[var(--accent)] hover:underline">
-              Sign in here
-            </Link>
-          </p>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  className="input-field px-4 py-2"
+                  placeholder="Confirm your password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <button type="submit" className="accent-button w-full py-2 font-semibold">
+                Create account
+              </button>
+            </form>
+
+            <p className="text-center mt-4 text-sm text-secondary">
+              Already have an account?{' '}
+              <Link to="/login" className="font-semibold text-[var(--accent)] hover:underline">
+                Sign in here
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

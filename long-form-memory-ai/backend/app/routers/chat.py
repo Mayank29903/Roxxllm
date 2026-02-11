@@ -1,11 +1,12 @@
-
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, AsyncGenerator
 import json
+from datetime import datetime
 
 from app.models.user import User
+from app.models.chat import Conversation
 from app.routers.auth import get_current_user_dependency
 from app.services.chat_service import ChatService
 
@@ -28,7 +29,6 @@ async def get_conversations(
     current_user: User = Depends(get_current_user_dependency),
     limit: int = 50
 ):
-    """Get all conversations for the current user."""
     return await chat_service.get_user_conversations(
         user_id=str(current_user.id),
         limit=limit
@@ -48,6 +48,11 @@ async def create_conversation(
         "id": str(conv.id),
         "title": conv.title,
         "created_at": conv.created_at.isoformat(),
+        "updated_at": (
+            conv.updated_at.isoformat()
+            if conv.updated_at
+            else conv.created_at.isoformat()
+        ),
         "turn_count": conv.turn_count
     }
 
@@ -85,7 +90,7 @@ async def send_message(
                 yield f"data: {json.dumps(event)}\n\n"
             yield "data: [DONE]\n\n"
 
-        return StreamingResponse(event_gen(), media_type="text/event-stream")
+        response = StreamingResponse(event_gen(), media_type="text/event-stream")
 
     else:
         result = None
@@ -96,7 +101,17 @@ async def send_message(
             stream=False
         ):
             result = event
-        return result
+
+        response = result
+
+    # 🔧 FIX: update conversation activity
+    conv = await Conversation.get(data.conversation_id)
+    if conv:
+        conv.updated_at = datetime.utcnow()
+        conv.turn_count += 1
+        await conv.save()
+
+    return response
 
 
 @router.delete("/conversations/{conversation_id}")
@@ -104,11 +119,8 @@ async def delete_conversation(
     conversation_id: str,
     current_user: User = Depends(get_current_user_dependency),
 ):
-    """
-    Delete a conversation and ALL its associated memories.
-    """
     await chat_service.delete_conversation(
         conversation_id=conversation_id,
         user_id=str(current_user.id)
     )
-    return {"success": True, "message": "Conversation and all associated memories deleted"}
+    return {"success": True}

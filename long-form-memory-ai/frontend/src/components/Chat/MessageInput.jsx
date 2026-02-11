@@ -17,13 +17,15 @@ const MessageInput = ({ onSend, isLoading }) => {
     const trimmed = message.trim()
     if (!trimmed || isLoading) return
 
+    setMessage('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+    }
+
     try {
       await onSend(trimmed)
-      setMessage('')
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'
-      }
     } catch (err) {
+      setMessage(trimmed)
       console.error('Message send failed:', err)
     }
   }

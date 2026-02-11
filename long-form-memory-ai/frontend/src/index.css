@@ -4,43 +4,45 @@
 @layer base {
   :root {
     --radius: 14px;
-    --shadow-soft: 0 16px 48px rgba(6, 12, 29, 0.12);
-    --bg-app: #f4f7fb;
-    --bg-app-grad-1: rgba(91, 152, 255, 0.16);
-    --bg-app-grad-2: rgba(36, 49, 73, 0.08);
-    --panel: #ffffffcc;
+    --shadow-soft: 0 16px 44px rgba(9, 20, 37, 0.12);
+    --bg-app: #f4fbfe;
+    --bg-app-grad-1: rgba(0, 229, 255, 0.2);
+    --bg-app-grad-2: rgba(0, 184, 212, 0.08);
+    --panel: rgba(255, 255, 255, 0.86);
     --panel-strong: #ffffff;
-    --panel-deep: #eff3f9;
-    --border-soft: #d8e2ef;
+    --panel-deep: #eaf6fb;
+    --border-soft: rgba(0, 184, 212, 0.26);
     --text-primary: #0f1728;
-    --text-secondary: #566173;
-    --text-muted: #7a869b;
-    --accent: #0e7aff;
-    --accent-strong: #0a63cf;
-    --accent-soft: rgba(14, 122, 255, 0.12);
-    --success: #16a34a;
-    --danger: #dc2626;
-    --overlay: rgba(2, 7, 18, 0.45);
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+    --accent: #00b8d4;
+    --accent-strong: #0097a7;
+    --accent-soft: rgba(0, 184, 212, 0.14);
+    --accent-glow: rgba(0, 184, 212, 0.26);
+    --success: #22c55e;
+    --danger: #f87171;
+    --overlay: rgba(15, 23, 40, 0.36);
   }
 
   :root[data-theme='dark'] {
-    --shadow-soft: 0 20px 54px rgba(0, 0, 0, 0.45);
-    --bg-app: #060c1a;
-    --bg-app-grad-1: rgba(24, 64, 130, 0.44);
-    --bg-app-grad-2: rgba(7, 17, 39, 0.6);
-    --panel: rgba(11, 19, 36, 0.78);
-    --panel-strong: #0f1b34;
-    --panel-deep: #0a1428;
-    --border-soft: rgba(119, 141, 181, 0.25);
-    --text-primary: #ecf1fb;
-    --text-secondary: #b8c5df;
-    --text-muted: #8695b3;
-    --accent: #24a2ff;
-    --accent-strong: #0e7ad5;
-    --accent-soft: rgba(36, 162, 255, 0.16);
-    --success: #31d06f;
+    --shadow-soft: 0 20px 56px rgba(0, 0, 0, 0.6);
+    --bg-app: #0a0a0f;
+    --bg-app-grad-1: rgba(0, 229, 255, 0.16);
+    --bg-app-grad-2: rgba(18, 18, 26, 0.9);
+    --panel: rgba(18, 18, 26, 0.9);
+    --panel-strong: #1a1a24;
+    --panel-deep: #12121a;
+    --border-soft: rgba(0, 229, 255, 0.24);
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-muted: #7a7a84;
+    --accent: #00e5ff;
+    --accent-strong: #00b8d4;
+    --accent-soft: rgba(0, 229, 255, 0.18);
+    --accent-glow: rgba(0, 229, 255, 0.4);
+    --success: #22c55e;
     --danger: #f87171;
-    --overlay: rgba(2, 6, 16, 0.72);
+    --overlay: rgba(10, 10, 15, 0.8);
   }
 
   * {
@@ -155,14 +157,25 @@
     background: color-mix(in srgb, var(--accent-soft) 66%, var(--panel-strong));
   }
 
-  .message-user {
-    border-left: 4px solid var(--accent);
-    background: color-mix(in srgb, var(--accent-soft) 60%, var(--panel-strong));
+  .chat-row {
+    border-top: 1px solid color-mix(in srgb, var(--border-soft) 72%, transparent);
+    padding: 16px 10px;
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
   }
 
-  .message-assistant {
-    border-left: 4px solid color-mix(in srgb, var(--text-muted) 50%, transparent);
-    background: color-mix(in srgb, var(--panel-strong) 92%, transparent);
+  .chat-row:hover {
+    background: color-mix(in srgb, var(--panel-strong) 36%, transparent);
+  }
+
+  .chat-row-user {
+    margin-left: auto;
+    width: min(100%, 52rem);
+  }
+
+  .chat-row-assistant {
+    margin-right: auto;
+    width: min(100%, 56rem);
   }
 
   .soft-scroll::-webkit-scrollbar {
@@ -178,12 +191,21 @@
 }
 
 @layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .fade-in-up {
     animation: fadeInUp 0.28s ease both;
   }
 
   .glow-ring {
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 36%, transparent), 0 0 36px color-mix(in srgb, var(--accent) 14%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent), 0 0 28px var(--accent-glow);
   }
 }
 

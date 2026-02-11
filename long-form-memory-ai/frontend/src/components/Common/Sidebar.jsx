@@ -3,12 +3,12 @@ import {
   PlusIcon,
   ChatBubbleLeftRightIcon,
   TrashIcon,
-  XMarkIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   SparklesIcon,
   UserCircleIcon
 } from '@heroicons/react/24/outline'
+import { formatSidebarIST } from '../../utils/time'
 
 const Sidebar = ({
   conversations,
@@ -33,31 +33,27 @@ const Sidebar = ({
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="text-base font-semibold truncate">Memory</p>
-              <p className="text-xs text-muted uppercase tracking-wider">Conversations</p>
+              <p className="text-xs text-muted uppercase tracking-wider">
+                Conversations
+              </p>
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={onToggleCollapse}
-            className="neutral-button p-2 hidden lg:inline-flex"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {collapsed ? (
-              <ChevronDoubleRightIcon className="h-4 w-4" />
-            ) : (
-              <ChevronDoubleLeftIcon className="h-4 w-4" />
-            )}
-          </button>
-          <button
-            onClick={onCloseMobile}
-            className="neutral-button p-2 lg:hidden"
-            aria-label="Close sidebar"
-          >
-            <XMarkIcon className="h-4 w-4" />
-          </button>
-        </div>
+
+        <button
+          onClick={() => {
+            onToggleCollapse()
+            onCloseMobile()
+          }}
+          className="neutral-button p-2"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? (
+            <ChevronDoubleRightIcon className="h-4 w-4" />
+          ) : (
+            <ChevronDoubleLeftIcon className="h-4 w-4" />
+          )}
+        </button>
       </div>
 
       <div className="px-3 md:px-4 pb-3 md:pb-4">
@@ -77,11 +73,14 @@ const Sidebar = ({
             Your Chats
           </div>
         )}
+
         {conversations.map((conv) => (
           <div
             key={conv.id}
             className={`sidebar-item group p-2 ${
-              currentConversation?.id === conv.id ? 'sidebar-item-active' : ''
+              currentConversation?.id === conv.id
+                ? 'sidebar-item-active'
+                : ''
             }`}
             title={collapsed ? conv.title : undefined}
           >
@@ -93,18 +92,28 @@ const Sidebar = ({
                 <div className="h-9 w-9 rounded-lg surface-strong flex items-center justify-center shrink-0">
                   <ChatBubbleLeftRightIcon className="h-4 w-4 text-[var(--accent)]" />
                 </div>
+
                 {!collapsed && (
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="text-sm font-medium truncate">{conv.title}</p>
-                    <p className="text-xs text-muted">{conv.turn_count || 0} turns</p>
+                    <p className="text-sm font-medium truncate">
+                      {conv.title}
+                    </p>
+                    <p className="text-xs text-muted">
+                      {formatSidebarIST(conv.created_at)}
+                    </p>
                   </div>
                 )}
               </button>
+
               {!collapsed && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    if (window.confirm('Delete this conversation and all its memories?')) {
+                    if (
+                      window.confirm(
+                        'Delete this conversation and all its memories?'
+                      )
+                    ) {
                       onDeleteConversation(conv.id)
                     }
                   }}
@@ -120,7 +129,11 @@ const Sidebar = ({
       </div>
 
       <div className="p-3 md:p-4 border-t">
-        <div className={`surface-strong rounded-xl p-3 flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
+        <div
+          className={`surface-strong rounded-xl p-3 flex items-center gap-2 ${
+            collapsed ? 'justify-center' : ''
+          }`}
+        >
           <UserCircleIcon className="h-6 w-6 text-[var(--accent)] shrink-0" />
           {!collapsed && (
             <div className="min-w-0">
@@ -128,7 +141,11 @@ const Sidebar = ({
               <p className="text-xs text-muted">Signed in</p>
             </div>
           )}
-          {collapsed && <span className="text-xs font-semibold truncate max-w-10">{username}</span>}
+          {collapsed && (
+            <span className="text-xs font-semibold truncate max-w-10">
+              {username}
+            </span>
+          )}
         </div>
       </div>
     </aside>

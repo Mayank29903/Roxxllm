@@ -94,7 +94,7 @@ export const ChatProvider = ({ children }) => {
     try {
       if (stream) {
         let chunkBuffer = ''
-        let rafPending = false
+        let flushTimer = null
 
         const flushChunks = () => {
           if (chunkBuffer) {
@@ -102,7 +102,14 @@ export const ChatProvider = ({ children }) => {
             chunkBuffer = ''
             setStreamingMessage(prev => prev + buffered)
           }
-          rafPending = false
+        }
+
+        const scheduleFlush = () => {
+          if (flushTimer) return
+          flushTimer = window.setTimeout(() => {
+            flushTimer = null
+            flushChunks()
+          }, 26)
         }
 
         // Streaming response
@@ -111,21 +118,23 @@ export const ChatProvider = ({ children }) => {
           content,
           (chunk) => {
             chunkBuffer += chunk
-            if (!rafPending) {
-              rafPending = true
-              requestAnimationFrame(flushChunks)
-            }
+            scheduleFlush()
           }
         )
+        if (flushTimer) {
+          window.clearTimeout(flushTimer)
+          flushTimer = null
+        }
         flushChunks()
 
         // Add final assistant message
+        const assistantCreatedAt = response?.message?.created_at || new Date().toISOString()
         setMessages(prev => [...prev, {
           id: Date.now() + 1,
           role: 'assistant',
           content: response.message.content,
           turn_number: response.message.turn_number,
-          created_at: response.message.created_at,
+          created_at: assistantCreatedAt,
           active_memories: response.memory_metadata?.active_memories || []
         }])
         
@@ -133,12 +142,13 @@ export const ChatProvider = ({ children }) => {
       } else {
         // Non-streaming response
         const response = await chatService.sendMessage(conversationId, content)
+        const assistantCreatedAt = response?.message?.created_at || new Date().toISOString()
         setMessages(prev => [...prev, {
           id: response.message.id,
           role: 'assistant',
           content: response.message.content,
           turn_number: response.message.turn_number,
-          created_at: response.message.created_at,
+          created_at: assistantCreatedAt,
           active_memories: response.memory_metadata?.active_memories || []
         }])
       }
@@ -146,22 +156,25 @@ export const ChatProvider = ({ children }) => {
       // Update conversation turn count
       setCurrentConversation(prev => {
         if (!prev || prev.id !== conversationId) return prev
+        const nowIso = new Date().toISOString()
         return {
           ...prev,
-          turn_count: (prev.turn_count || 0) + 1
+          turn_count: (prev.turn_count || 0) + 1,
+          updated_at: nowIso
         }
       })
 
       // Update conversation in the list
       setConversations(prev => {
+        const nowIso = new Date().toISOString()
         const exists = prev.some(conv => conv.id === conversationId)
         if (!exists) {
-          return [{ ...activeConversation, turn_count: 1 }, ...prev]
+          return [{ ...activeConversation, turn_count: 1, updated_at: nowIso }, ...prev]
         }
 
         return prev.map(conv =>
           conv.id === conversationId
-            ? { ...conv, turn_count: (conv.turn_count || 0) + 1 }
+            ? { ...conv, turn_count: (conv.turn_count || 0) + 1, updated_at: nowIso }
             : conv
         )
       })

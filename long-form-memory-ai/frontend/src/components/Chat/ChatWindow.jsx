@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
   ArrowRightOnRectangleIcon,
-  Bars3Icon,
   MoonIcon,
   SunIcon,
-  BoltIcon
+  BoltIcon,
+  ChevronDoubleRightIcon
 } from '@heroicons/react/24/outline'
 import useChat from '../../hooks/useChat'
 import useAuth from '../../hooks/useAuth'
@@ -14,6 +14,7 @@ import MessageList from './MessageList'
 import MessageInput from './MessageInput'
 
 const DESKTOP_BREAKPOINT = 1024
+const AUTO_SCROLL_THRESHOLD = 170
 
 const ChatWindow = () => {
   const {
@@ -26,12 +27,15 @@ const ChatWindow = () => {
     createConversation,
     selectConversation,
     deleteConversation,
-    sendMessage
+    sendMessage,
+    setConversations // only used if available in your hook
   } = useChat()
+
   const { user, logout } = useAuth()
   const { isDark, toggleTheme } = useTheme()
 
   const scrollContainerRef = useRef(null)
+  const shouldAutoScrollRef = useRef(true)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
@@ -49,12 +53,6 @@ const ChatWindow = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const isNearBottom = () => {
-    const el = scrollContainerRef.current
-    if (!el) return true
-    return el.scrollHeight - el.scrollTop - el.clientHeight < 140
-  }
-
   const scrollToBottom = (behavior = 'auto') => {
     const el = scrollContainerRef.current
     if (!el) return
@@ -62,16 +60,37 @@ const ChatWindow = () => {
   }
 
   useEffect(() => {
-    if (isNearBottom()) {
-      requestAnimationFrame(() => scrollToBottom('smooth'))
+    const el = scrollContainerRef.current
+    if (!el) return undefined
+
+    const updateAutoScroll = () => {
+      const distanceFromBottom =
+        el.scrollHeight - el.scrollTop - el.clientHeight
+      shouldAutoScrollRef.current =
+        distanceFromBottom < AUTO_SCROLL_THRESHOLD
+    }
+
+    updateAutoScroll()
+    el.addEventListener('scroll', updateAutoScroll, { passive: true })
+    return () => el.removeEventListener('scroll', updateAutoScroll)
+  }, [currentConversation?.id])
+
+  useEffect(() => {
+    if (shouldAutoScrollRef.current) {
+      requestAnimationFrame(() => scrollToBottom('auto'))
     }
   }, [messages.length])
 
   useEffect(() => {
-    if (isNearBottom()) {
+    if (shouldAutoScrollRef.current) {
       requestAnimationFrame(() => scrollToBottom('auto'))
     }
   }, [streamingMessage])
+
+  useEffect(() => {
+    shouldAutoScrollRef.current = true
+    requestAnimationFrame(() => scrollToBottom('auto'))
+  }, [currentConversation?.id])
 
   const handleToggleSidebar = () => {
     if (window.innerWidth >= DESKTOP_BREAKPOINT) {
@@ -89,10 +108,26 @@ const ChatWindow = () => {
   }
 
   const handleSendMessage = async (content) => {
+    shouldAutoScrollRef.current = true
+    requestAnimationFrame(() => scrollToBottom('auto'))
+
     await sendMessage(content, true)
+
+    // SAFE optional sidebar timestamp refresh
+    if (currentConversation && typeof setConversations === 'function') {
+      setConversations(prev =>
+        prev.map(c =>
+          c.id === currentConversation.id
+            ? { ...c, updated_at: new Date().toISOString() }
+            : c
+        )
+      )
+    }
   }
 
   const displayName = user?.username ? `@${user.username}` : '@user'
+  const userInitial =
+    (user?.username?.trim()?.charAt(0) || 'U').toUpperCase()
 
   return (
     <div className="flex h-screen overflow-hidden text-[var(--text-primary)]">
@@ -119,29 +154,33 @@ const ChatWindow = () => {
         user={user}
         className={`fixed inset-y-0 left-0 z-50 transition-transform duration-200 lg:static lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } ${isSidebarCollapsed ? 'lg:w-[88px]' : 'lg:w-[320px]'} w-[292px]`}
+        } ${isSidebarCollapsed ? 'lg:w-[92px]' : 'lg:w-[320px]'} w-[292px]`}
       />
 
       <section className="flex-1 min-w-0 flex flex-col h-full">
         <header className="surface-panel rounded-none border-x-0 border-t-0 px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <button
-                className="neutral-button p-2"
-                onClick={handleToggleSidebar}
-                aria-label="Toggle sidebar"
-              >
-                <Bars3Icon className="h-5 w-5" />
-              </button>
+              {!isSidebarOpen && (
+                <button
+                  className="neutral-button p-2 lg:hidden"
+                  onClick={() => setIsSidebarOpen(true)}
+                  aria-label="Open sidebar"
+                >
+                  <ChevronDoubleRightIcon className="h-4 w-4" />
+                </button>
+              )}
               <div className="h-9 w-9 rounded-xl surface-strong glow-ring hidden sm:flex items-center justify-center">
                 <BoltIcon className="h-4 w-4 text-[var(--accent)]" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg sm:text-xl font-semibold truncate">
-                  {currentConversation?.title || 'Welcome to the chat box'}
+                  MemoryAI
                 </h1>
                 <p className="text-xs sm:text-sm text-muted truncate">
-                  {currentConversation ? `Turn ${currentConversation.turn_count || 0}` : 'Start a conversation, memory stays in context.'}
+                  {currentConversation
+                    ? currentConversation.title
+                    : 'Start a conversation and keep context across sessions.'}
                 </p>
               </div>
             </div>
@@ -157,9 +196,15 @@ const ChatWindow = () => {
                 aria-label="Toggle theme"
                 title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                {isDark ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+                {isDark ? (
+                  <SunIcon className="h-5 w-5" />
+                ) : (
+                  <MoonIcon className="h-5 w-5" />
+                )}
               </button>
-              <span className="text-sm font-medium hidden sm:block">{displayName}</span>
+              <span className="text-sm font-medium hidden sm:block">
+                {displayName}
+              </span>
               <button
                 onClick={logout}
                 className="neutral-button p-2"
@@ -177,6 +222,7 @@ const ChatWindow = () => {
           streamingMessage={streamingMessage}
           isLoading={isLoading}
           scrollContainerRef={scrollContainerRef}
+          userInitial={userInitial}
         />
 
         <MessageInput
