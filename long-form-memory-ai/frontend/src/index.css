@@ -6,8 +6,8 @@
     --radius: 14px;
     --shadow-soft: 0 16px 44px rgba(9, 20, 37, 0.12);
     --bg-app: #f4fbfe;
-    --bg-app-grad-1: rgba(0, 229, 255, 0.2);
-    --bg-app-grad-2: rgba(0, 184, 212, 0.08);
+    --bg-app-grad-1: rgba(0, 229, 255, 0.008);
+    --bg-app-grad-2: rgba(0, 184, 212, 0.01);
     --panel: rgba(255, 255, 255, 0.86);
     --panel-strong: #ffffff;
     --panel-deep: #eaf6fb;
