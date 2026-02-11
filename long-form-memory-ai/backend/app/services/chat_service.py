@@ -552,7 +552,7 @@ Return as JSON array. If nothing found, return []."""
             from app.services.llm_service import LLMService
             llm_service = LLMService()
             
-            response = await llm_service.generate_response(
+            response = llm_service.generate_response(
                 messages=[
                     {"role": "system", "content": "You extract personal information for memory storage."},
                     {"role": "user", "content": backup_prompt}

@@ -175,7 +175,7 @@ class MemoryReasoner:
         
         try:
             # Call LLM for reasoning
-            response = await self.llm_service.generate_response(
+            response = self.llm_service.generate_response(
                 messages=[
                     {"role": "system", "content": reasoning_prompt},
                     {"role": "user", "content": user_query}

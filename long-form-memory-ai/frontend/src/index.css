@@ -144,12 +144,22 @@
   .sidebar-item {
     border-radius: 12px;
     border: 1px solid transparent;
-    transition: all 0.18s ease;
+    margin-inline: 2px;
+    padding: 8px;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      margin 0.2s ease,
+      padding 0.2s ease;
   }
 
   .sidebar-item:hover {
     border-color: color-mix(in srgb, var(--accent) 24%, var(--border-soft));
     background: color-mix(in srgb, var(--accent-soft) 40%, var(--panel-strong));
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-glow) 28%, transparent);
+    margin-inline: 0;
+    padding: 9px 10px;
   }
 
   .sidebar-item-active {
@@ -157,15 +167,21 @@
     background: color-mix(in srgb, var(--accent-soft) 66%, var(--panel-strong));
   }
 
+  .sidebar-delete-btn {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sidebar-item:hover .sidebar-delete-btn,
+  .sidebar-item:focus-within .sidebar-delete-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .chat-row {
     border-top: 1px solid color-mix(in srgb, var(--border-soft) 72%, transparent);
     padding: 16px 10px;
     border-radius: 12px;
-    transition: background-color 0.2s ease;
-  }
-
-  .chat-row:hover {
-    background: color-mix(in srgb, var(--panel-strong) 36%, transparent);
   }
 
   .chat-row-user {
@@ -176,6 +192,85 @@
   .chat-row-assistant {
     margin-right: auto;
     width: min(100%, 56rem);
+  }
+
+  .message-bubble {
+    display: inline-block;
+    width: fit-content;
+    max-width: min(100%, 46rem);
+    border-radius: 16px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-soft);
+  }
+
+  .message-bubble-user {
+    background: color-mix(in srgb, var(--accent-soft) 56%, var(--panel-strong));
+  }
+
+  .message-bubble-ai {
+    background: color-mix(in srgb, var(--panel-strong) 94%, transparent);
+  }
+
+  .message-markdown > :first-child {
+    margin-top: 0;
+  }
+
+  .message-markdown > :last-child {
+    margin-bottom: 0;
+  }
+
+  .message-bubble-wrap {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 2rem;
+  }
+
+  .bubble-copy-btn-anchored {
+    position: absolute;
+    top: calc(100% - 1.75rem);
+  }
+
+  .bubble-copy-btn-user {
+    right: 0;
+  }
+
+  .bubble-copy-btn-ai {
+    left: 0;
+  }
+
+  .bubble-copy-btn {
+    opacity: 0;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.75rem;
+    width: 1.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-soft);
+    background: color-mix(in srgb, var(--panel-strong) 90%, transparent);
+    color: var(--text-muted);
+    transform: translateY(2px);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease,
+      color 0.2s ease,
+      background-color 0.2s ease;
+    transition-delay: 0ms;
+  }
+
+  .bubble-copy-btn:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--panel-strong) 100%, transparent);
+  }
+
+  .message-bubble-wrap:hover .bubble-copy-btn,
+  .message-bubble-wrap:focus-within .bubble-copy-btn,
+  .bubble-copy-btn[data-copied='true'] {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition-delay: 120ms;
   }
 
   .soft-scroll::-webkit-scrollbar {

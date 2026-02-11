@@ -3,6 +3,7 @@ import React, { createContext, useState, useCallback } from 'react'
 import { chatService } from '../services/chatService'
 
 export const ChatContext = createContext(null)
+const ACTIVE_CONVERSATION_STORAGE_KEY = 'activeConversationId'
 
 export const ChatProvider = ({ children }) => {
   const [conversations, setConversations] = useState([])
@@ -15,8 +16,10 @@ export const ChatProvider = ({ children }) => {
     try {
       const data = await chatService.getConversations()
       setConversations(data)
+      return data
     } catch (err) {
       console.error('Failed to load conversations:', err)
+      return []
     }
   }, [])
 
@@ -26,6 +29,7 @@ export const ChatProvider = ({ children }) => {
       setConversations(prev => [data, ...prev])
       setCurrentConversation(data)
       setMessages([])
+      localStorage.setItem(ACTIVE_CONVERSATION_STORAGE_KEY, data.id)
       return data
     } catch (err) {
       console.error('Failed to create conversation:', err)
@@ -46,6 +50,7 @@ export const ChatProvider = ({ children }) => {
 
   const selectConversation = useCallback(async (conversation) => {
     setCurrentConversation(conversation)
+    localStorage.setItem(ACTIVE_CONVERSATION_STORAGE_KEY, conversation.id)
     await loadMessages(conversation.id)
   }, [loadMessages])
 
@@ -60,6 +65,10 @@ export const ChatProvider = ({ children }) => {
       if (currentConversation?.id === conversationId) {
         setCurrentConversation(null)
         setMessages([])
+      }
+
+      if (localStorage.getItem(ACTIVE_CONVERSATION_STORAGE_KEY) === conversationId) {
+        localStorage.removeItem(ACTIVE_CONVERSATION_STORAGE_KEY)
       }
       
       console.log('✅ Conversation and all memories deleted')
@@ -129,6 +138,7 @@ export const ChatProvider = ({ children }) => {
 
         // Add final assistant message
         const assistantCreatedAt = response?.message?.created_at || new Date().toISOString()
+        setStreamingMessage('')
         setMessages(prev => [...prev, {
           id: Date.now() + 1,
           role: 'assistant',
@@ -137,8 +147,6 @@ export const ChatProvider = ({ children }) => {
           created_at: assistantCreatedAt,
           active_memories: response.memory_metadata?.active_memories || []
         }])
-        
-        setStreamingMessage('')
       } else {
         // Non-streaming response
         const response = await chatService.sendMessage(conversationId, content)
@@ -181,6 +189,7 @@ export const ChatProvider = ({ children }) => {
 
     } catch (err) {
       console.error('Failed to send message:', err)
+      setStreamingMessage('')
       // Remove optimistic message on error
       setMessages(prev => prev.filter(m => m.id !== tempUserMessage.id))
       throw err

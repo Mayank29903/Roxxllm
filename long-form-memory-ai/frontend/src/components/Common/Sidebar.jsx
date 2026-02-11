@@ -15,7 +15,7 @@ const Sidebar = ({
   currentConversation,
   onSelectConversation,
   onNewChat,
-  onDeleteConversation,
+  onRequestDeleteConversation,
   onCloseMobile,
   onToggleCollapse,
   collapsed = false,
@@ -77,7 +77,7 @@ const Sidebar = ({
         {conversations.map((conv) => (
           <div
             key={conv.id}
-            className={`sidebar-item group p-2 ${
+            className={`sidebar-item group ${
               currentConversation?.id === conv.id
                 ? 'sidebar-item-active'
                 : ''
@@ -87,7 +87,7 @@ const Sidebar = ({
             <div className="w-full flex items-center gap-2 min-w-0">
               <button
                 onClick={() => onSelectConversation(conv)}
-                className="w-full flex items-center gap-2 min-w-0"
+                className="flex-1 flex items-center gap-2 min-w-0"
               >
                 <div className="h-9 w-9 rounded-lg surface-strong flex items-center justify-center shrink-0">
                   <ChatBubbleLeftRightIcon className="h-4 w-4 text-[var(--accent)]" />
@@ -105,24 +105,17 @@ const Sidebar = ({
                 )}
               </button>
 
-              {!collapsed && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (
-                      window.confirm(
-                        'Delete this conversation and all its memories?'
-                      )
-                    ) {
-                      onDeleteConversation(conv.id)
-                    }
-                  }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-muted hover:text-red-400"
-                  title="Delete conversation and all memories"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRequestDeleteConversation(conv)
+                }}
+                className="sidebar-delete-btn p-2 ml-1 text-muted hover:text-red-400 transition-opacity shrink-0"
+                title="Delete conversation and all memories"
+                aria-label={`Delete ${conv.title}`}
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
             </div>
           </div>
         ))}
