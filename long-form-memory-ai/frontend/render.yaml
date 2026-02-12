@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: longform-memory-frontend
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm run start
+    publishDir: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://your-backend-name.onrender.com
+        sync: false
+      - key: VITE_FIREBASE_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_PROJECT_ID
+        sync: false
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        value: your-project.firebaseapp.com
+        sync: false
+      - key: VITE_FIREBASE_APP_ID
+        sync: false
+      - key: VITE_APP_NAME
+        value: LongFormMemoryAI
+        sync: false
+    healthCheckPath: /
+    autoDeploy: true
+    healthCheck:
+      path: /
+      initialDelaySeconds: 30
+      intervalSeconds: 10
+      timeoutSeconds: 5
+      gracePeriodSeconds: 10
+      successThreshold: 3
+      failureThreshold: 3
