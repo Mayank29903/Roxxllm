@@ -26,7 +26,7 @@ export const chatService = {
   },
 
   sendMessageStream: async (conversationId, content, onChunk) => {
-    const response = await fetch('http://localhost:8000/chat/send', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/chat/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
