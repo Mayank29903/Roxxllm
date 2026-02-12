@@ -3,10 +3,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, AsyncGenerator
 import json
-from datetime import datetime
 
 from app.models.user import User
-from app.models.chat import Conversation
 from app.routers.auth import get_current_user_dependency
 from app.services.chat_service import ChatService
 
@@ -91,7 +89,6 @@ async def send_message(
             yield "data: [DONE]\n\n"
 
         response = StreamingResponse(event_gen(), media_type="text/event-stream")
-
     else:
         result = None
         async for event in chat_service.process_message(
@@ -103,13 +100,6 @@ async def send_message(
             result = event
 
         response = result
-
-    # 🔧 FIX: update conversation activity
-    conv = await Conversation.get(data.conversation_id)
-    if conv:
-        conv.updated_at = datetime.utcnow()
-        conv.turn_count += 1
-        await conv.save()
 
     return response
 

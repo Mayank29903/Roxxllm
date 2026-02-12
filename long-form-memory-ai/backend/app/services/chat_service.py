@@ -76,6 +76,20 @@ class ChatService:
             "Use this for questions like today/tomorrow/yesterday or current time."
         )
 
+    def _derive_conversation_title(self, content: str, max_length: int = 60) -> str:
+        """Create a compact, readable title from the first user message."""
+        cleaned = " ".join((content or "").strip().split())
+        if not cleaned:
+            return "New Conversation"
+
+        if len(cleaned) <= max_length:
+            return cleaned
+
+        truncated = cleaned[:max_length].rstrip()
+        if " " in truncated:
+            truncated = truncated.rsplit(" ", 1)[0]
+        return f"{truncated}..."
+
     async def create_conversation(
         self,
         user_id: str,
@@ -100,6 +114,28 @@ class ChatService:
             .limit(limit)
             .to_list()
         )
+
+        # Backfill title from first user message when conversation still has default title.
+        # This keeps sidebar titles stable across refreshes, including older chats.
+        for conv in conversations:
+            if conv.title and conv.title != "New Conversation":
+                continue
+
+            first_user_messages = (
+                await Message.find(
+                    Message.conversation_id == str(conv.id),
+                    Message.role == "user"
+                )
+                .sort("+turn_number")
+                .limit(1)
+                .to_list()
+            )
+
+            if first_user_messages:
+                inferred_title = self._derive_conversation_title(first_user_messages[0].content)
+                if inferred_title != "New Conversation":
+                    conv.title = inferred_title
+                    await conv.save()
         
         return [
             {
@@ -195,6 +231,10 @@ class ChatService:
         conv = await Conversation.get(conversation_id)
         if not conv or conv.user_id != user_id:
             raise HTTPException(status_code=404, detail="Conversation not found")
+
+        # Use the first user message as conversation "crux" title.
+        if conv.turn_count == 0 and (not conv.title or conv.title == "New Conversation"):
+            conv.title = self._derive_conversation_title(content)
 
         conv.turn_count += 1
         conv.updated_at = datetime.utcnow()
@@ -503,6 +543,12 @@ class ChatService:
                 "turn_number": conv.turn_count,
                 "created_at": assistant_msg.created_at.isoformat(),
             },
+            "conversation": {
+                "id": str(conv.id),
+                "title": conv.title,
+                "turn_count": conv.turn_count,
+                "updated_at": conv.updated_at.isoformat() if conv.updated_at else datetime.utcnow().isoformat(),
+            },
             "memory_metadata": {
                 "active_memories": active_memory_ids
             }
@@ -552,7 +598,7 @@ Return as JSON array. If nothing found, return []."""
             from app.services.llm_service import LLMService
             llm_service = LLMService()
             
-            response = await llm_service.generate_response(
+            response = llm_service.generate_response(
                 messages=[
                     {"role": "system", "content": "You extract personal information for memory storage."},
                     {"role": "user", "content": backup_prompt}

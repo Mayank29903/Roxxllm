@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { SparklesIcon } from '@heroicons/react/24/solid'
+import { CheckIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { formatISTDateTime, formatNowISTDateTime } from '../../utils/time'
@@ -8,6 +9,34 @@ const WELCOME_HEADLINE = 'Memory Workspace'
 const WELCOME_TITLE = 'Start a High-Context Session'
 const WELCOME_SUBTITLE = 'Share once and chat naturally. We remember important details across your conversations.'
 const STREAM_TYPE_INTERVAL_MS = 18
+
+const copyToClipboard = async (text) => {
+  if (!text) return false
+
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+  } catch {
+    // Fallback path handled below.
+  }
+
+  try {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(textarea)
+    return ok
+  } catch {
+    return false
+  }
+}
 
 const EmptyState = ({ typing }) => (
   <div className="h-full flex items-center justify-center px-4">
@@ -44,25 +73,91 @@ const InitialBadge = ({ label }) => (
   </div>
 )
 
+const ThinkingIndicator = () => (
+  <article className="chat-row chat-row-assistant">
+    <div className="flex items-start gap-3">
+      <InitialBadge label="A" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-start mb-2">
+          <span className="text-xs text-muted">{formatNowISTDateTime()}</span>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-2xl surface-panel px-4 py-2.5">
+          <span className="text-sm font-medium text-secondary animate-pulse">Thinking</span>
+          <span className="inline-flex items-center gap-1" aria-hidden="true">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse [animation-delay:0ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse [animation-delay:180ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse [animation-delay:360ms]" />
+          </span>
+        </div>
+      </div>
+    </div>
+  </article>
+)
+
 const MessageCard = memo(({ message, userInitial }) => {
   const isUser = message.role === 'user'
+  const [isCopied, setIsCopied] = useState(false)
+  const copiedTimerRef = useRef(null)
+
+  useEffect(() => () => {
+    if (copiedTimerRef.current) {
+      window.clearTimeout(copiedTimerRef.current)
+      copiedTimerRef.current = null
+    }
+  }, [])
+
+  const handleCopy = async () => {
+    const copied = await copyToClipboard(message.content)
+    if (!copied) return
+
+    setIsCopied(true)
+    if (copiedTimerRef.current) {
+      window.clearTimeout(copiedTimerRef.current)
+    }
+    copiedTimerRef.current = window.setTimeout(() => {
+      setIsCopied(false)
+      copiedTimerRef.current = null
+    }, 1200)
+  }
 
   return (
     <article className={`chat-row ${isUser ? 'chat-row-user' : 'chat-row-assistant'}`}>
       <div className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
         <InitialBadge label={isUser ? userInitial : 'A'} />
         <div className="min-w-0 flex-1">
-          <div className={`flex items-center mb-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+          <div className={`flex items-center gap-2 mb-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
             <span className="text-xs text-muted">{formatISTDateTime(message.created_at)}</span>
           </div>
-          <div
-            className={`prose prose-sm sm:prose-base max-w-none leading-7 text-[var(--text-primary)] prose-headings:text-[var(--text-primary)] prose-strong:text-[var(--text-primary)] prose-p:text-[var(--text-primary)] prose-li:text-[var(--text-primary)] prose-code:text-[var(--text-primary)] ${
-              isUser ? 'text-right' : 'text-left'
-            }`}
-          >
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {message.content}
-            </ReactMarkdown>
+
+          <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+            <div className={`message-bubble-wrap ${isUser ? 'message-bubble-wrap-user' : 'message-bubble-wrap-ai'}`}>
+              <div className={`message-bubble ${isUser ? 'message-bubble-user' : 'message-bubble-ai'}`}>
+                <div
+                  className={`message-markdown prose prose-sm sm:prose-base max-w-none leading-7 text-[var(--text-primary)] prose-headings:text-[var(--text-primary)] prose-strong:text-[var(--text-primary)] prose-p:text-[var(--text-primary)] prose-li:text-[var(--text-primary)] prose-code:text-[var(--text-primary)] ${
+                    isUser ? 'text-right' : 'text-left'
+                  }`}
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCopy}
+                className={`bubble-copy-btn bubble-copy-btn-anchored ${isUser ? 'bubble-copy-btn-user' : 'bubble-copy-btn-ai'}`}
+                data-copied={isCopied ? 'true' : 'false'}
+                title={isCopied ? 'Copied' : 'Copy message'}
+                aria-label={isCopied ? 'Copied' : 'Copy message'}
+              >
+                {isCopied ? (
+                  <CheckIcon className="h-3.5 w-3.5" />
+                ) : (
+                  <ClipboardDocumentIcon className="h-3.5 w-3.5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -136,7 +231,7 @@ const MessageList = ({ messages, streamingMessage, isLoading, scrollContainerRef
 
     if (!streamTargetRef.current) {
       if (streamTimerRef.current) {
-        window.clearTimeout(streamTimerRef.current)
+        window.clearInterval(streamTimerRef.current)
         streamTimerRef.current = null
       }
       displayedLengthRef.current = 0
@@ -144,43 +239,33 @@ const MessageList = ({ messages, streamingMessage, isLoading, scrollContainerRef
       return undefined
     }
 
+    if (displayedLengthRef.current > streamTargetRef.current.length) {
+      displayedLengthRef.current = streamTargetRef.current.length
+      setAnimatedStreamingMessage(
+        streamTargetRef.current.slice(0, displayedLengthRef.current)
+      )
+    }
+
     const tick = () => {
       const target = streamTargetRef.current
-      if (!target) {
-        streamTimerRef.current = null
-        return
-      }
+      if (!target) return
+      if (displayedLengthRef.current >= target.length) return
 
-      const currentLength = displayedLengthRef.current
-      if (currentLength >= target.length) {
-        streamTimerRef.current = null
-        return
-      }
-
-      const remaining = target.length - currentLength
-      const step =
-        remaining > 120 ? 14
-          : remaining > 80 ? 10
-            : remaining > 40 ? 6
-              : remaining > 20 ? 4
-                : 2
-
-      const nextLength = Math.min(target.length, currentLength + step)
-      const nextText = target.slice(0, nextLength)
-
-      displayedLengthRef.current = nextLength
-      setAnimatedStreamingMessage(nextText)
-      streamTimerRef.current = window.setTimeout(tick, STREAM_TYPE_INTERVAL_MS)
+      displayedLengthRef.current += 1
+      setAnimatedStreamingMessage(target.slice(0, displayedLengthRef.current))
     }
 
     if (!streamTimerRef.current) {
       tick()
+      streamTimerRef.current = window.setInterval(tick, STREAM_TYPE_INTERVAL_MS)
     }
+
+    return undefined
   }, [streamingMessage])
 
   useEffect(() => () => {
     if (streamTimerRef.current) {
-      window.clearTimeout(streamTimerRef.current)
+      window.clearInterval(streamTimerRef.current)
       streamTimerRef.current = null
     }
   }, [])
@@ -192,16 +277,16 @@ const MessageList = ({ messages, streamingMessage, isLoading, scrollContainerRef
     [messages, userInitial]
   )
 
-  const liveStreamingText = animatedStreamingMessage || streamingMessage
+  const liveStreamingText = animatedStreamingMessage
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto soft-scroll px-3 sm:px-5 py-5">
+    <div ref={scrollContainerRef} className="chat-message-area flex-1 overflow-y-auto soft-scroll px-3 sm:px-5 py-5">
       {messages.length === 0 && !streamingMessage && <EmptyState typing={typing} />}
 
       <div className="max-w-5xl mx-auto space-y-4">
         {renderedMessages}
 
-        {liveStreamingText && (
+        {isLoading && liveStreamingText && (
           <article className="chat-row chat-row-assistant">
             <div className="flex items-start gap-3">
               <InitialBadge label="A" />
@@ -209,20 +294,19 @@ const MessageList = ({ messages, streamingMessage, isLoading, scrollContainerRef
                 <div className="flex items-center justify-start mb-2">
                   <span className="text-xs text-muted">{formatNowISTDateTime()}</span>
                 </div>
-                <div className="whitespace-pre-wrap leading-7 text-[var(--text-primary)]">
-                  {liveStreamingText}
-                  <span className="inline-block h-5 w-2 ml-1 align-middle bg-[var(--accent)] animate-pulse rounded-sm" />
+                <div className="flex justify-start">
+                  <div className="message-bubble message-bubble-ai">
+                    <div className="whitespace-pre-wrap leading-7 text-[var(--text-primary)]">
+                      {liveStreamingText}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </article>
         )}
 
-        {isLoading && !streamingMessage && (
-          <div className="py-8 flex items-center justify-center">
-            <div className="h-8 w-8 rounded-full border-2 border-[var(--border-soft)] border-t-[var(--accent)] animate-spin" />
-          </div>
-        )}
+        {isLoading && !streamingMessage && <ThinkingIndicator />}
       </div>
     </div>
   )

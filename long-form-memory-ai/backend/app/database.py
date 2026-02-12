@@ -12,7 +12,7 @@ async def init_db():
     """Initialize MongoDB connection."""
     global client
 
-    client = client = AsyncIOMotorClient("mongodb://localhost:27017/longform_memory_ai")
+    client = AsyncIOMotorClient(settings.MONGODB_URL)
 
 
     await init_beanie(

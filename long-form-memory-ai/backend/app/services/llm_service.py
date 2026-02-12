@@ -61,6 +61,7 @@ class LLMService:
                     ) as response:
 
                         print("HTTP STATUS:", response.status_code)
+                        response.raise_for_status()
 
                         async for line in response.aiter_lines():
                             if not line:

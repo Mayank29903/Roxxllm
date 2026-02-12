@@ -67,6 +67,8 @@ export const chatService = {
             if (parsed.type === 'chunk') {
               fullMessage += parsed.content
               onChunk(parsed.content)
+            } else if (parsed.type === 'error') {
+              throw new Error(parsed.content || 'Streaming failed')
             } else if (parsed.type === 'complete') {
               finalData = parsed
             }
@@ -82,6 +84,9 @@ export const chatService = {
       if (data && data !== '[DONE]') {
         try {
           const parsed = JSON.parse(data)
+          if (parsed.type === 'error') {
+            throw new Error(parsed.content || 'Streaming failed')
+          }
           if (parsed.type === 'complete') {
             finalData = parsed
           }

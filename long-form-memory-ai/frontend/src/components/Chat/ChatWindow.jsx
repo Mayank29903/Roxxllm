@@ -38,10 +38,32 @@ const ChatWindow = () => {
   const shouldAutoScrollRef = useRef(true)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [pendingDeleteConversation, setPendingDeleteConversation] = useState(null)
+  const [isDeletingConversation, setIsDeletingConversation] = useState(false)
 
   useEffect(() => {
-    loadConversations()
-  }, [loadConversations])
+    let isCancelled = false
+
+    const restoreConversation = async () => {
+      const loadedConversations = await loadConversations()
+      if (isCancelled || !loadedConversations?.length) return
+
+      const savedConversationId = localStorage.getItem('activeConversationId')
+      const restoredConversation =
+        loadedConversations.find((conv) => conv.id === savedConversationId) ||
+        loadedConversations[0]
+
+      if (restoredConversation) {
+        await selectConversation(restoredConversation)
+      }
+    }
+
+    restoreConversation()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [loadConversations, selectConversation])
 
   useEffect(() => {
     const handleResize = () => {
@@ -125,6 +147,39 @@ const ChatWindow = () => {
     }
   }
 
+  const handleRequestDeleteConversation = (conversation) => {
+    setPendingDeleteConversation(conversation)
+  }
+
+  const closeDeleteConversationDialog = () => {
+    if (isDeletingConversation) return
+    setPendingDeleteConversation(null)
+  }
+
+  const confirmDeleteConversation = async () => {
+    if (!pendingDeleteConversation || isDeletingConversation) return
+    try {
+      setIsDeletingConversation(true)
+      await deleteConversation(pendingDeleteConversation.id)
+      setPendingDeleteConversation(null)
+    } finally {
+      setIsDeletingConversation(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!pendingDeleteConversation) return undefined
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        closeDeleteConversationDialog()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [pendingDeleteConversation, isDeletingConversation])
+
   const displayName = user?.username ? `@${user.username}` : '@user'
   const userInitial =
     (user?.username?.trim()?.charAt(0) || 'U').toUpperCase()
@@ -147,17 +202,17 @@ const ChatWindow = () => {
           setIsSidebarOpen(false)
         }}
         onNewChat={handleNewChat}
-        onDeleteConversation={deleteConversation}
+        onRequestDeleteConversation={handleRequestDeleteConversation}
         onCloseMobile={() => setIsSidebarOpen(false)}
         onToggleCollapse={handleToggleSidebar}
         collapsed={isSidebarCollapsed}
         user={user}
-        className={`fixed inset-y-0 left-0 z-50 transition-transform duration-200 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 overflow-hidden transition-[transform,width] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] lg:static lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } ${isSidebarCollapsed ? 'lg:w-[92px]' : 'lg:w-[320px]'} w-[292px]`}
       />
 
-      <section className="flex-1 min-w-0 flex flex-col h-full">
+      <section className="chat-main-surface relative flex-1 min-w-0 flex flex-col h-full">
         <header className="surface-panel rounded-none border-x-0 border-t-0 px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -229,6 +284,54 @@ const ChatWindow = () => {
           onSend={handleSendMessage}
           isLoading={isLoading}
         />
+
+        {pendingDeleteConversation && (
+          <div className="absolute inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
+            <button
+              type="button"
+              className="absolute inset-0 bg-[var(--overlay)]"
+              onClick={closeDeleteConversationDialog}
+              aria-label="Close delete confirmation"
+            />
+
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-chat-title"
+              className="relative w-full max-w-2xl surface-panel rounded-3xl p-6 sm:p-8"
+            >
+              <h3 id="delete-chat-title" className="text-2xl sm:text-3xl font-semibold">
+                Delete This Conversation?
+              </h3>
+              <p className="mt-3 text-base sm:text-lg text-secondary leading-7">
+                You are about to permanently delete{' '}
+                <span className="font-semibold text-[var(--text-primary)]">
+                  "{pendingDeleteConversation.title}"
+                </span>
+                . This will also remove all memories extracted from this chat.
+              </p>
+
+              <div className="mt-7 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={closeDeleteConversationDialog}
+                  disabled={isDeletingConversation}
+                  className="neutral-button px-5 py-2.5"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteConversation}
+                  disabled={isDeletingConversation}
+                  className="danger-button delete-conversation-btn rounded-xl px-5 py-2.5 disabled:opacity-60"
+                >
+                  {isDeletingConversation ? 'Deleting...' : 'Delete Conversation'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )
