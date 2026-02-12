@@ -146,7 +146,7 @@ const MessageCard = memo(({ message, userInitial }) => {
               <button
                 type="button"
                 onClick={handleCopy}
-                className={`bubble-copy-btn bubble-copy-btn-anchored ${isUser ? 'bubble-copy-btn-user' : 'bubble-copy-btn-ai'}`}
+                className={`bubble-copy-btn bubble-copy-btn-anchored ${isUser ? 'bubble-copy-btn-user' : 'bubble-copy-btn-ai'} cursor-pointer`}
                 data-copied={isCopied ? 'true' : 'false'}
                 title={isCopied ? 'Copied' : 'Copy message'}
                 aria-label={isCopied ? 'Copied' : 'Copy message'}

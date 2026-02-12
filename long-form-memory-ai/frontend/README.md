@@ -14,3 +14,19 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Environment Variables
+
+This project uses environment variables for all sensitive configuration (API keys, URLs, etc). **Never commit secrets to source control.**
+
+- Copy `.env.example` to `.env` and fill in your real values before running locally or deploying.
+- All variables prefixed with `VITE_` are exposed to the frontend via `import.meta.env`.
+
+Example:
+
+```sh
+cp .env.example .env
+# Edit .env and set your real values
+```
+
+See `.env.example` for required variables.

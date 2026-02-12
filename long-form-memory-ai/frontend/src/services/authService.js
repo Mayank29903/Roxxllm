@@ -38,5 +38,9 @@ export const authService = {
       refresh_token: refreshToken
     })
     return response.data
+  },
+
+  deleteAccount: async () => {
+    return api.delete('/user/delete')
   }
 }

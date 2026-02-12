@@ -26,7 +26,7 @@ const Header = () => {
             </div>
             <button
               onClick={logout}
-              className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded-md transition-colors"
+              className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded-md transition-colors cursor-pointer"
               title="Logout"
             >
               <ArrowRightOnRectangleIcon className="h-5 w-5" />

@@ -40,7 +40,7 @@ const Login = () => {
         <div className="absolute top-0 right-0 z-10">
           <button
             onClick={toggleTheme}
-            className="neutral-button p-2"
+            className="neutral-button p-2 cursor-pointer"
             aria-label="Toggle theme"
             title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
@@ -97,7 +97,7 @@ const Login = () => {
                 />
               </div>
 
-              <button type="submit" className="accent-button w-full py-2 font-semibold">
+              <button type="submit" className="accent-button w-full py-2 font-semibold cursor-pointer">
                 Sign in
               </button>
             </form>
@@ -117,7 +117,7 @@ const Login = () => {
               type="button"
               onClick={() => handleGoogleSignIn(false)}
               disabled={isGoogleLoading}
-              className="google-auth-btn w-full flex items-center justify-center gap-3 rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="google-auth-btn w-full flex items-center justify-center gap-3 rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isGoogleLoading ? (
                 <>
