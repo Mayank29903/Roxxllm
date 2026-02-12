@@ -110,7 +110,7 @@ const Sidebar = ({
                   e.stopPropagation()
                   onRequestDeleteConversation(conv)
                 }}
-                className="sidebar-delete-btn p-2 ml-1 text-[#222831] hover:text-red-400 transition-opacity shrink-0"
+                className="sidebar-delete-btn p-2 ml-1 transition-opacity shrink-0"
                 title="Delete conversation and all memories"
                 aria-label={`Delete ${conv.title}`}
               >

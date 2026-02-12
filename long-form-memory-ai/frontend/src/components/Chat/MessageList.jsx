@@ -59,9 +59,9 @@ const EmptyState = ({ typing }) => (
       </p>
 
       <div className="mt-8 flex flex-wrap gap-2">
-        <span className="surface-strong rounded-full px-4 py-2 text-sm">Plan my day</span>
-        <span className="surface-strong rounded-full px-4 py-2 text-sm">Summarize my last task</span>
-        <span className="surface-strong rounded-full px-4 py-2 text-sm">Remember my preferences</span>
+        <span className="prompt-chip rounded-full px-4 py-2 text-sm">Plan my day</span>
+        <span className="prompt-chip rounded-full px-4 py-2 text-sm">Summarize my last task</span>
+        <span className="prompt-chip rounded-full px-4 py-2 text-sm">Remember my preferences</span>
       </div>
     </div>
   </div>

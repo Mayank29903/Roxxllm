@@ -241,7 +241,7 @@ const ChatWindow = () => {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full surface-strong text-xs font-medium">
+              <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full status-pill text-xs font-medium">
                 <span className="inline-block h-2 w-2 rounded-full bg-[var(--success)]" />
                 Active
               </span>

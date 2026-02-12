@@ -4,151 +4,169 @@
 @layer base {
   :root {
     --radius: 14px;
-    --shadow-soft: 0 18px 44px color-mix(in srgb, #222831 18%, transparent);
-    --bg-app: #dfd0b8;
-    --bg-app-grad-1: color-mix(in srgb, #948979 24%, transparent);
-    --bg-app-grad-2: color-mix(in srgb, #393e46 14%, transparent);
-    --panel: color-mix(in srgb, #dfd0b8 88%, transparent);
-    --panel-strong: #dfd0b8;
-    --panel-deep: color-mix(in srgb, #948979 35%, #dfd0b8);
-    --border-soft: color-mix(in srgb, #393e46 30%, transparent);
-    --text-primary: #222831;
-    --text-secondary: #393e46;
-    --text-muted: color-mix(in srgb, #393e46 66%, #948979);
-    --accent: #393e46;
-    --accent-strong: #222831;
-    --accent-contrast: #dfd0b8;
-    --accent-soft: color-mix(in srgb, #393e46 18%, transparent);
-    --accent-glow: color-mix(in srgb, #393e46 28%, transparent);
-    --success: #948979;
-    --danger: #393e46;
-    --overlay: color-mix(in srgb, #222831 48%, transparent);
+    --shadow-soft: 0 14px 34px color-mix(in srgb, #8ea8bb 14%, transparent);
+    --bg-app: #ecf2f6;
+    --bg-app-grad-1: color-mix(in srgb, #b7ecf7 28%, transparent);
+    --bg-app-grad-2: color-mix(in srgb, #d8e4ee 36%, transparent);
+    --panel: color-mix(in srgb, #f7fbff 90%, transparent);
+    --panel-strong: #f3f8fc;
+    --panel-deep: color-mix(in srgb, #d9e7f2 76%, #f3f8fc);
+    --border-soft: color-mix(in srgb, #84d6ea 42%, #c5d7e5);
+    --text-primary: #0f172a;
+    --text-secondary: #4b5565;
+    --text-muted: #6c7788;
+    --accent: #14c9e8;
+    --accent-strong: #0faad0;
+    --accent-contrast: #f8fdff;
+    --accent-soft: color-mix(in srgb, #14c9e8 15%, transparent);
+    --accent-glow: color-mix(in srgb, #14c9e8 26%, transparent);
+    --success: #22c55e;
+    --danger: #dc2626;
+    --overlay: color-mix(in srgb, #0f172a 28%, transparent);
 
     /* Component-scoped theme tokens */
-    --chat-main-surface-bg: color-mix(in srgb, #dfd0b8 95%, transparent);
-    --sidebar-shell-bg: #393e46;
-    --sidebar-shell-border: color-mix(in srgb, #dfd0b8 28%, transparent);
-    --sidebar-shell-shadow: 0 18px 38px color-mix(in srgb, #222831 30%, transparent);
-    --sidebar-shell-muted: #dfd0b8;
+    --chat-main-surface-bg: color-mix(in srgb, #eaf1f6 96%, transparent);
+    --sidebar-shell-bg: #f4f7fa;
+    --sidebar-shell-border: color-mix(in srgb, #84d6ea 62%, #cfe1ed);
+    --sidebar-shell-shadow: 0 10px 24px color-mix(in srgb, #93a8b8 10%, transparent);
+    --sidebar-shell-muted: #6f7d8f;
 
-    --sidebar-new-chat-bg: #dfd0b8;
-    --sidebar-new-chat-text: #222831;
-    --sidebar-new-chat-border: #948979;
-    --sidebar-new-chat-shadow: 0 8px 18px color-mix(in srgb, #222831 22%, transparent);
-    --sidebar-new-chat-hover-bg: color-mix(in srgb, #dfd0b8 84%, #948979);
-    --sidebar-new-chat-hover-text: #222831;
-    --sidebar-new-chat-hover-border: #393e46;
+    --sidebar-new-chat-bg: linear-gradient(135deg, #1bd4ef 0%, #0fb4d7 100%);
+    --sidebar-new-chat-text: #f6fdff;
+    --sidebar-new-chat-border: #16c5e3;
+    --sidebar-new-chat-shadow: 0 10px 22px color-mix(in srgb, #12c2e2 28%, transparent);
+    --sidebar-new-chat-hover-bg: linear-gradient(135deg, #27daf4 0%, #12bfdc 100%);
+    --sidebar-new-chat-hover-text: #f6fdff;
+    --sidebar-new-chat-hover-border: #18cee9;
     --sidebar-new-chat-hover-filter: none;
 
-    --sidebar-item-border: color-mix(in srgb, #dfd0b8 28%, transparent);
-    --sidebar-item-bg: #948979;
-    --sidebar-item-hover-border: #dfd0b8;
-    --sidebar-item-hover-bg: color-mix(in srgb, #948979 85%, #dfd0b8);
-    --sidebar-item-hover-shadow: 0 8px 18px color-mix(in srgb, #222831 24%, transparent);
-    --sidebar-item-active-border: #222831;
-    --sidebar-item-active-bg: color-mix(in srgb, #948979 70%, #dfd0b8);
-    --sidebar-item-active-shadow: inset 0 0 0 1px color-mix(in srgb, #222831 24%, transparent);
-    --sidebar-item-title: #222831;
-    --sidebar-item-meta: color-mix(in srgb, #222831 72%, #dfd0b8);
+    --sidebar-item-border: color-mix(in srgb, #7cd3e8 34%, transparent);
+    --sidebar-item-bg: transparent;
+    --sidebar-item-hover-border: color-mix(in srgb, #73cfe5 56%, transparent);
+    --sidebar-item-hover-bg: color-mix(in srgb, #14c9e8 14%, #f1f7fb);
+    --sidebar-item-hover-shadow: none;
+    --sidebar-item-active-border: color-mix(in srgb, #5dc7df 74%, #a7ddec);
+    --sidebar-item-active-bg: color-mix(in srgb, #14c9e8 19%, #eef5fa);
+    --sidebar-item-active-shadow: inset 0 0 0 1px color-mix(in srgb, #14c9e8 18%, transparent);
+    --sidebar-item-title: #111b30;
+    --sidebar-item-meta: #627286;
 
-    --chat-bubble-user-bg: #948979;
-    --chat-bubble-ai-bg: #dfd0b8;
-    --chat-bubble-border: color-mix(in srgb, #393e46 34%, transparent);
+    --chat-bubble-user-bg: linear-gradient(135deg, #1bd4ef 0%, #10b7d9 100%);
+    --chat-bubble-ai-bg: #f4f8fb;
+    --chat-bubble-border: color-mix(in srgb, #84d6ea 40%, #cad9e5);
     --chat-bubble-text: var(--text-primary);
-    --chat-bubble-user-text: #222831;
-    --chat-bubble-ai-text: #222831;
+    --chat-bubble-user-text: #04202b;
+    --chat-bubble-ai-text: #172033;
   }
 
   :root[data-theme='light'] {
-    /* Keep original palette-driven light mode intact */
-    --chat-main-surface-bg: color-mix(in srgb, #dfd0b8 95%, transparent);
-    --sidebar-shell-bg: #393e46;
-    --sidebar-shell-border: color-mix(in srgb, #dfd0b8 28%, transparent);
-    --sidebar-shell-shadow: 0 18px 38px color-mix(in srgb, #222831 30%, transparent);
-    --sidebar-shell-muted: #dfd0b8;
+    --shadow-soft: 0 14px 34px color-mix(in srgb, #8ea8bb 14%, transparent);
+    --bg-app: #ecf2f6;
+    --bg-app-grad-1: color-mix(in srgb, #b7ecf7 28%, transparent);
+    --bg-app-grad-2: color-mix(in srgb, #d8e4ee 36%, transparent);
+    --panel: color-mix(in srgb, #f7fbff 90%, transparent);
+    --panel-strong: #f3f8fc;
+    --panel-deep: color-mix(in srgb, #d9e7f2 76%, #f3f8fc);
+    --border-soft: color-mix(in srgb, #84d6ea 42%, #c5d7e5);
+    --text-primary: #0f172a;
+    --text-secondary: #4b5565;
+    --text-muted: #6c7788;
+    --accent: #14c9e8;
+    --accent-strong: #0faad0;
+    --accent-contrast: #f8fdff;
+    --accent-soft: color-mix(in srgb, #14c9e8 15%, transparent);
+    --accent-glow: color-mix(in srgb, #14c9e8 26%, transparent);
+    --success: #22c55e;
+    --danger: #dc2626;
+    --overlay: color-mix(in srgb, #0f172a 28%, transparent);
 
-    --sidebar-new-chat-bg: #dfd0b8;
-    --sidebar-new-chat-text: #222831;
-    --sidebar-new-chat-border: #948979;
-    --sidebar-new-chat-shadow: 0 8px 18px color-mix(in srgb, #222831 22%, transparent);
-    --sidebar-new-chat-hover-bg: color-mix(in srgb, #dfd0b8 84%, #948979);
-    --sidebar-new-chat-hover-text: #222831;
-    --sidebar-new-chat-hover-border: #393e46;
+    --chat-main-surface-bg: color-mix(in srgb, #eaf1f6 96%, transparent);
+    --sidebar-shell-bg: #f4f7fa;
+    --sidebar-shell-border: color-mix(in srgb, #84d6ea 62%, #cfe1ed);
+    --sidebar-shell-shadow: 0 10px 24px color-mix(in srgb, #93a8b8 10%, transparent);
+    --sidebar-shell-muted: #6f7d8f;
+
+    --sidebar-new-chat-bg: linear-gradient(135deg, #1bd4ef 0%, #0fb4d7 100%);
+    --sidebar-new-chat-text: #f6fdff;
+    --sidebar-new-chat-border: #16c5e3;
+    --sidebar-new-chat-shadow: 0 10px 22px color-mix(in srgb, #12c2e2 28%, transparent);
+    --sidebar-new-chat-hover-bg: linear-gradient(135deg, #27daf4 0%, #12bfdc 100%);
+    --sidebar-new-chat-hover-text: #f6fdff;
+    --sidebar-new-chat-hover-border: #18cee9;
     --sidebar-new-chat-hover-filter: none;
 
-    --sidebar-item-border: color-mix(in srgb, #dfd0b8 28%, transparent);
-    --sidebar-item-bg: #948979;
-    --sidebar-item-hover-border: #dfd0b8;
-    --sidebar-item-hover-bg: color-mix(in srgb, #948979 85%, #dfd0b8);
-    --sidebar-item-hover-shadow: 0 8px 18px color-mix(in srgb, #222831 24%, transparent);
-    --sidebar-item-active-border: #222831;
-    --sidebar-item-active-bg: color-mix(in srgb, #948979 70%, #dfd0b8);
-    --sidebar-item-active-shadow: inset 0 0 0 1px color-mix(in srgb, #222831 24%, transparent);
-    --sidebar-item-title: #222831;
-    --sidebar-item-meta: color-mix(in srgb, #222831 72%, #dfd0b8);
+    --sidebar-item-border: color-mix(in srgb, #7cd3e8 34%, transparent);
+    --sidebar-item-bg: transparent;
+    --sidebar-item-hover-border: color-mix(in srgb, #73cfe5 56%, transparent);
+    --sidebar-item-hover-bg: color-mix(in srgb, #14c9e8 14%, #f1f7fb);
+    --sidebar-item-hover-shadow: none;
+    --sidebar-item-active-border: color-mix(in srgb, #5dc7df 74%, #a7ddec);
+    --sidebar-item-active-bg: color-mix(in srgb, #14c9e8 19%, #eef5fa);
+    --sidebar-item-active-shadow: inset 0 0 0 1px color-mix(in srgb, #14c9e8 18%, transparent);
+    --sidebar-item-title: #111b30;
+    --sidebar-item-meta: #627286;
 
-    --chat-bubble-user-bg: #948979;
-    --chat-bubble-ai-bg: #dfd0b8;
-    --chat-bubble-border: color-mix(in srgb, #393e46 34%, transparent);
+    --chat-bubble-user-bg: linear-gradient(135deg, #1bd4ef 0%, #10b7d9 100%);
+    --chat-bubble-ai-bg: #f4f8fb;
+    --chat-bubble-border: color-mix(in srgb, #84d6ea 40%, #cad9e5);
     --chat-bubble-text: var(--text-primary);
-    --chat-bubble-user-text: #222831;
-    --chat-bubble-ai-text: #222831;
+    --chat-bubble-user-text: #04202b;
+    --chat-bubble-ai-text: #172033;
   }
 
   :root[data-theme='dark'] {
-    --shadow-soft: 0 22px 56px color-mix(in srgb, #222831 44%, transparent);
-    --bg-app: #222831;
-    --bg-app-grad-1: color-mix(in srgb, #948979 24%, transparent);
-    --bg-app-grad-2: color-mix(in srgb, #393e46 84%, transparent);
-    --panel: color-mix(in srgb, #393e46 86%, transparent);
-    --panel-strong: #393e46;
-    --panel-deep: color-mix(in srgb, #222831 72%, #393e46);
-    --border-soft: color-mix(in srgb, #dfd0b8 30%, transparent);
-    --text-primary: #dfd0b8;
-    --text-secondary: color-mix(in srgb, #dfd0b8 84%, #948979);
-    --text-muted: color-mix(in srgb, #dfd0b8 62%, #948979);
-    --accent: #dfd0b8;
-    --accent-strong: #948979;
-    --accent-contrast: #222831;
-    --accent-soft: color-mix(in srgb, #dfd0b8 18%, transparent);
-    --accent-glow: color-mix(in srgb, #dfd0b8 32%, transparent);
-    --success: #948979;
-    --danger: #948979;
-    --overlay: color-mix(in srgb, #222831 78%, transparent);
+    --shadow-soft: 0 18px 42px color-mix(in srgb, #020616 64%, transparent);
+    --bg-app: #040917;
+    --bg-app-grad-1: color-mix(in srgb, #0fc9ea 23%, transparent);
+    --bg-app-grad-2: color-mix(in srgb, #112146 56%, transparent);
+    --panel: color-mix(in srgb, #0a1125 92%, transparent);
+    --panel-strong: #0f1730;
+    --panel-deep: color-mix(in srgb, #0a1228 88%, #0e1730);
+    --border-soft: color-mix(in srgb, #16cbe9 34%, #203754);
+    --text-primary: #eef7ff;
+    --text-secondary: #97acc0;
+    --text-muted: #7f95ab;
+    --accent: #15d0ee;
+    --accent-strong: #109fca;
+    --accent-contrast: #ecfbff;
+    --accent-soft: color-mix(in srgb, #15d0ee 18%, transparent);
+    --accent-glow: color-mix(in srgb, #15d0ee 35%, transparent);
+    --success: #22c55e;
+    --danger: #f87171;
+    --overlay: color-mix(in srgb, #020713 76%, transparent);
 
-    /* Dark mode explicit mapping */
-    --chat-main-surface-bg: #222831;
-    --sidebar-shell-bg: #222831;
-    --sidebar-shell-border: #393e46;
-    --sidebar-shell-shadow: 0 16px 38px color-mix(in srgb, #222831 38%, transparent);
-    --sidebar-shell-muted: #dfd0b8;
+    --chat-main-surface-bg: radial-gradient(860px 420px at 32% 0%, color-mix(in srgb, #14c9e8 20%, transparent), transparent 72%), #040917;
+    --sidebar-shell-bg: #070d1f;
+    --sidebar-shell-border: color-mix(in srgb, #14c9e8 44%, #14253f);
+    --sidebar-shell-shadow: 0 16px 38px color-mix(in srgb, #020816 56%, transparent);
+    --sidebar-shell-muted: #8ea3b9;
 
-    --sidebar-new-chat-bg: #dfd0b8;
-    --sidebar-new-chat-text: #222831;
-    --sidebar-new-chat-border: #948979;
-    --sidebar-new-chat-shadow: 0 8px 18px color-mix(in srgb, #222831 24%, transparent);
-    --sidebar-new-chat-hover-bg: color-mix(in srgb, #dfd0b8 84%, #948979);
-    --sidebar-new-chat-hover-text: #222831;
-    --sidebar-new-chat-hover-border: #dfd0b8;
+    --sidebar-new-chat-bg: linear-gradient(135deg, #1ad7f2 0%, #11b6d8 100%);
+    --sidebar-new-chat-text: #ecfbff;
+    --sidebar-new-chat-border: #17cce9;
+    --sidebar-new-chat-shadow: 0 12px 24px color-mix(in srgb, #0ebfdc 30%, transparent);
+    --sidebar-new-chat-hover-bg: linear-gradient(135deg, #25dcf6 0%, #12c3e0 100%);
+    --sidebar-new-chat-hover-text: #ecfbff;
+    --sidebar-new-chat-hover-border: #22d6f1;
     --sidebar-new-chat-hover-filter: none;
 
-    --sidebar-item-border: #948979;
-    --sidebar-item-bg: #948979;
-    --sidebar-item-hover-border: #dfd0b8;
-    --sidebar-item-hover-bg: color-mix(in srgb, #948979 85%, #dfd0b8);
-    --sidebar-item-hover-shadow: 0 8px 18px color-mix(in srgb, #222831 26%, transparent);
-    --sidebar-item-active-border: #dfd0b8;
-    --sidebar-item-active-bg: color-mix(in srgb, #948979 70%, #dfd0b8);
-    --sidebar-item-active-shadow: inset 0 0 0 1px color-mix(in srgb, #222831 24%, transparent);
-    --sidebar-item-title: #222831;
-    --sidebar-item-meta: #393e46;
+    --sidebar-item-border: color-mix(in srgb, #16cbe9 30%, transparent);
+    --sidebar-item-bg: color-mix(in srgb, #0e1732 90%, transparent);
+    --sidebar-item-hover-border: color-mix(in srgb, #16cbe9 54%, transparent);
+    --sidebar-item-hover-bg: color-mix(in srgb, #15d0ee 14%, #0d1731);
+    --sidebar-item-hover-shadow: none;
+    --sidebar-item-active-border: color-mix(in srgb, #1ad8f3 78%, #10243e);
+    --sidebar-item-active-bg: color-mix(in srgb, #15d0ee 21%, #0b152d);
+    --sidebar-item-active-shadow: inset 0 0 0 1px color-mix(in srgb, #14c9e8 24%, transparent);
+    --sidebar-item-title: #edf7ff;
+    --sidebar-item-meta: #95a9bc;
 
-    --chat-bubble-user-bg: #948979;
-    --chat-bubble-ai-bg: #393e46;
-    --chat-bubble-border: color-mix(in srgb, #dfd0b8 42%, transparent);
-    --chat-bubble-text: #dfd0b8;
-    --chat-bubble-user-text: #222831;
-    --chat-bubble-ai-text: #dfd0b8;
+    --chat-bubble-user-bg: linear-gradient(135deg, #1ad7f2 0%, #109cbe 100%);
+    --chat-bubble-ai-bg: #101a34;
+    --chat-bubble-border: color-mix(in srgb, #17cce9 34%, #1e3654);
+    --chat-bubble-text: #e7f2fb;
+    --chat-bubble-user-text: #041823;
+    --chat-bubble-ai-text: #d8e5f2;
   }
 
   * {
@@ -213,6 +231,12 @@
     border: 1px solid var(--border-soft);
   }
 
+  .status-pill {
+    background: color-mix(in srgb, var(--panel-strong) 72%, transparent);
+    border: 1px solid var(--border-soft);
+    color: var(--text-primary);
+  }
+
   .surface-deep {
     background: var(--panel-deep);
     border: 1px solid var(--border-soft);
@@ -254,7 +278,7 @@
   }
 
   .neutral-button {
-    background: color-mix(in srgb, var(--panel-strong) 86%, transparent);
+    background: color-mix(in srgb, var(--panel-strong) 62%, transparent);
     color: var(--text-primary);
     border: 1px solid var(--border-soft);
     border-radius: 12px;
@@ -262,7 +286,8 @@
   }
 
   .neutral-button:hover {
-    background: color-mix(in srgb, var(--panel-strong) 94%, transparent);
+    background: color-mix(in srgb, var(--panel-strong) 78%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 28%, var(--border-soft));
   }
 
   .danger-button {
@@ -284,6 +309,28 @@
 
   :root[data-theme='dark'] .danger-button:hover {
     background: color-mix(in srgb, #ef4444 24%, transparent);
+  }
+
+  .auth-error {
+    border: 1px solid color-mix(in srgb, #ef4444 40%, transparent);
+    background: color-mix(in srgb, #ef4444 14%, transparent);
+    color: color-mix(in srgb, #ef4444 76%, var(--text-primary));
+  }
+
+  .auth-divider-line {
+    border-color: color-mix(in srgb, var(--border-soft) 84%, transparent);
+  }
+
+  .google-auth-btn {
+    border: 1px solid var(--border-soft);
+    background: color-mix(in srgb, var(--panel-strong) 78%, transparent);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+  }
+
+  .google-auth-btn:hover {
+    background: color-mix(in srgb, var(--panel-strong) 92%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 24%, var(--border-soft));
   }
 
   .input-field {
@@ -343,9 +390,14 @@
   }
 
   .sidebar-delete-btn {
+    color: var(--text-muted);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.18s ease 60ms, color 0.2s ease;
+  }
+
+  .sidebar-delete-btn:hover {
+    color: color-mix(in srgb, var(--danger) 80%, var(--text-primary));
   }
 
   .sidebar-item:hover .sidebar-delete-btn,
@@ -388,6 +440,12 @@
   .message-bubble-ai {
     background: var(--chat-bubble-ai-bg);
     --text-primary: var(--chat-bubble-ai-text);
+  }
+
+  .prompt-chip {
+    border: 1px solid var(--border-soft);
+    background: color-mix(in srgb, var(--panel-strong) 66%, transparent);
+    color: var(--text-primary);
   }
 
   .message-markdown > :first-child {
