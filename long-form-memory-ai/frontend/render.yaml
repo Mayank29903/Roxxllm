@@ -8,7 +8,7 @@ services:
     publishDir: dist
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://your-backend-name.onrender.com
+        value: hhttps://roxxllm.onrender.com
         sync: false
       - key: VITE_FIREBASE_API_KEY
         sync: false
