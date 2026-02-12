@@ -1,8 +1,8 @@
 # 🧠 LongFormMemoryAI
 
-> An intelligent AI conversation system with persistent long-term memory capabilities
+> A smart AI assistant that remembers conversations, understands context, and improves responses over time.
+Built with a scalable memory pipeline, semantic retrieval, and modern full-stack architecture.
 
-![LongFormMemoryAI Logo](https://via.placeholder.com/400x200/1e40af/ffffff?text=LongFormMemoryAI)
 
 
 
