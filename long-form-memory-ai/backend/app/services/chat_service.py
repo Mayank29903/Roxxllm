@@ -192,24 +192,20 @@ class ChatService:
         if not conv or conv.user_id != user_id:
             raise HTTPException(status_code=404, detail="Conversation not found")
         
-        print(f"\n🗑️ Deleting conversation {conversation_id} and its memories...")
         
         # 2. Delete all memories associated with this conversation
         memories_deleted = await self.memory_service.delete_conversation_memories(
             conversation_id=conversation_id,
             user_id=user_id
         )
-        print(f"   Deleted {memories_deleted} memories")
         
         # 3. Delete all messages in the conversation
         messages = await Message.find(Message.conversation_id == conversation_id).to_list()
         for msg in messages:
             await msg.delete()
-        print(f"   Deleted {len(messages)} messages")
         
         # 4. Delete the conversation itself
         await conv.delete()
-        print(f"✅ Conversation deleted successfully")
         
         return True
 
@@ -221,12 +217,6 @@ class ChatService:
         stream: bool = False
     ) -> AsyncGenerator[Dict[str, Any], None]:
 
-        print("\n===== CHAT INPUT =====")
-        print("User:", user_id)
-        print("Conversation:", conversation_id)
-        print("Message:", content)
-        print("Stream:", stream)
-        print("======================\n")
 
         conv = await Conversation.get(conversation_id)
         if not conv or conv.user_id != user_id:
@@ -263,7 +253,6 @@ class ChatService:
         # This ensures latest preferences are always considered
         
         # Enhanced memory retrieval with time-aware access
-        print(f"\n===== ENHANCED MEMORY RETRIEVAL FOR TURN {conv.turn_count} =====")
         
         # 1. Get semantically relevant memories based on current message
         relevant_memories = await self.memory_service.search_memories(
@@ -272,7 +261,6 @@ class ChatService:
             current_turn=conv.turn_count,
             top_k=12  # Increased for better coverage
         )
-        print(f"  Semantic search found {len(relevant_memories)} memories")
         
         # 2. Get memories from last 4 hours (addresses the core issue)
         recent_hours_memories = await self.memory_service.get_user_memories(
@@ -281,7 +269,6 @@ class ChatService:
             sort_by="time_created",
             hours_ago=4  # NEW: Get memories from last 4 hours
         )
-        print(f"  Last 4 hours: {len(recent_hours_memories)} memories")
         
         # 3. Get memories from last 24 hours for broader context
         last_day_memories = await self.memory_service.get_user_memories(
@@ -290,7 +277,6 @@ class ChatService:
             sort_by="time_created", 
             hours_ago=24
         )
-        print(f"  Last 24 hours: {len(last_day_memories)} memories")
         
         # 4. Get the most recent high-importance memories (preferences, instructions)
         recent_important = await self.memory_service.get_user_memories(
@@ -298,7 +284,6 @@ class ChatService:
             limit=8,
             sort_by="recency"  # Hybrid sort for cross-conversation awareness
         )
-        print(f"  Recent important: {len(recent_important)} memories")
 
         # 5. Always include a broader set of preferences for cross-chat inference
         preference_memories = await self.memory_service.get_user_memories(
@@ -307,8 +292,6 @@ class ChatService:
             limit=30,  # Reduced but still comprehensive
             sort_by="time_created"  # Changed to time-based for better recall
         )
-        print(f"  All preferences: {len(preference_memories)} memories")
-        print("=========================================================\n")
         
         # 6. Enhanced merging and prioritization with time-aware deduplication
         memory_map = {}
@@ -335,13 +318,11 @@ class ChatService:
                 # If memory doesn't exist, add it
                 if key not in memory_map:
                     memory_map[key] = mem
-                    print(f"  Added {group_name}: [{mem.memory_type}] {mem.key}")
                 else:
                     # If memory exists, keep the more recent one by creation time
                     existing = memory_map[key]
                     if mem.created_at > existing.created_at:
                         memory_map[key] = mem
-                        print(f"  Updated {group_name}: [{mem.memory_type}] {mem.key} (newer)")
         
         # Convert to list and sort by creation time first, then by source_turn
         def enhanced_sort_key(mem):
@@ -352,11 +333,6 @@ class ChatService:
         memories = list(memory_map.values())
         memories.sort(key=enhanced_sort_key, reverse=True)
         
-        print(f"\n📋 Final merged memories: {len(memories)} total")
-        for i, mem in enumerate(memories[:8]):  # Show top 8 for debugging
-            hours_old = (datetime.utcnow() - mem.created_at).total_seconds() / 3600
-            print(f"  {i+1}. [{mem.memory_type}] {mem.key}: {mem.value} ({hours_old:.1f}h ago)")
-        print("")
         
         active_memory_ids = [str(m.id) for m in memories]
         
@@ -364,7 +340,6 @@ class ChatService:
         # This enables the system to answer questions about things not explicitly stated
         inference_result = None
         if memories:
-            print("\n===== CHECKING FOR INFERENCE OPPORTUNITIES =====")
             # Convert Message objects to dictionaries for reasoner
             history_dicts = [
                 {"role": m.role, "content": m.content}
@@ -378,15 +353,10 @@ class ChatService:
             )
             
             if inference_result["should_use"] and inference_result["inferred_answer"]:
-                print(f"✓ Inference found with confidence {inference_result['confidence']:.2f}")
-                print(f"  Answer: {inference_result['inferred_answer']}")
-                print(f"  Reasoning: {inference_result['inference_chain']}")
                 # Add inference hint to memories context for the LLM
                 inference_hint = f"\n\n[INFERENCE OPPORTUNITY]: Based on the user's preferences and facts, we can infer that: {inference_result['inferred_answer']}\nReasoning: {inference_result['inference_chain']}\nPlease use this inference naturally in your response if relevant to the user's question."
             else:
-                print(f"✗ No confident inference possible (confidence: {inference_result['confidence']:.2f})")
                 inference_hint = None
-            print("=================================================\n")
         else:
             inference_hint = None
         
@@ -406,15 +376,7 @@ class ChatService:
                 {"role": "system", "content": system_context}
             ] + messages
             
-            print("\n===== ACTIVE MEMORIES (Sorted by Recency) =====")
-            for m in memories[:10]:  # Show top 10
-                print(f"  Turn {m.source_turn}: [{m.memory_type}] {m.key}: {m.value}")
-            print("===============================================\n")
 
-        print("\n===== CONTEXT TO LLM =====")
-        for m in messages:
-            print(m)
-        print("=========================\n")
 
         full_response = ""
 
@@ -422,7 +384,6 @@ class ChatService:
             messages=messages,
             stream=stream
         ):
-            print("LLM EVENT:", event)
 
             if event["type"] in ("token", "final"):
                 chunk = event.get("content", "")
@@ -438,9 +399,6 @@ class ChatService:
                 yield event
                 return
 
-        print("\n===== FINAL RESPONSE =====")
-        print(full_response)
-        print("==========================\n")
 
         assistant_msg = Message(
             conversation_id=conversation_id,
@@ -464,9 +422,6 @@ class ChatService:
         extraction_decision = self.memory_extractor.should_extract(conv.turn_count, content)
         
         if extraction_decision["should_extract"]:
-            print(f"\n🧠 MEMORY EXTRACTION STARTED - Priority: {extraction_decision['priority']}")
-            print(f"   Reason: {extraction_decision['reason']}")
-            print(f"   Force: {extraction_decision.get('force_extraction', False)}")
             
             try:
                 # First extraction attempt
@@ -480,7 +435,6 @@ class ChatService:
                 
                 # Backup extraction if nothing was extracted but should have been
                 if not extracted and extraction_decision.get("priority") in ["critical", "high"]:
-                    print("⚠️ NO MEMORIES EXTRACTED - Running backup extraction...")
                     backup_extracted = await self._backup_extraction(
                         user_message=content,
                         assistant_response=full_response,
@@ -490,7 +444,6 @@ class ChatService:
                     extracted.extend(backup_extracted)
                 
                 if extracted:
-                    print(f"\n===== EXTRACTED {len(extracted)} MEMORIES =====")
                     memories_stored = 0
                     
                     for mem in extracted:
@@ -499,7 +452,6 @@ class ChatService:
                             if extraction_decision.get("extraction_boost"):
                                 mem["importance"] = min(1.0, mem.get('importance', 0.5) + extraction_decision["extraction_boost"])
                             
-                            print(f"  [{mem['type']}] {mem['key']}: {mem['value']} (confidence: {mem.get('confidence', 0.5):.2f}, importance: {mem.get('importance', 0.5):.2f})")
                             
                             # Store in database
                             await self.memory_service.create_memory(
@@ -516,18 +468,13 @@ class ChatService:
                             memories_stored += 1
                             
                         except Exception as mem_error:
-                            print(f"  ❌ Failed to store memory [{mem.get('key', 'unknown')}]: {mem_error}")
-                    
-                    print(f"✅ Successfully stored {memories_stored}/{len(extracted)} memories")
-                    print("=========================================\n")
+                            pass  # Memory storage failed, continue with others
                 else:
-                    print("📝 No memories found in this turn")
+                    pass  # No memories extracted
                     
             except Exception as e:
-                print(f"❌ Memory extraction failed: {e}")
                 # Try emergency fallback extraction for critical cases
                 if extraction_decision.get("priority") == "critical":
-                    print("🚨 ATTEMPTING EMERGENCY EXTRACTION...")
                     await self._emergency_memory_extraction(
                         user_id=user_id,
                         user_message=content,
@@ -565,7 +512,6 @@ class ChatService:
         Backup extraction method for cases where primary extraction fails but 
         we know there should be memories (based on priority signals).
         """
-        print(f"🔄 Running backup extraction (priority: {priority})")
         
         # Simpler, more aggressive extraction prompt
         backup_prompt = f"""Extract EVERY important piece of personal information from this conversation:
@@ -624,13 +570,12 @@ Return as JSON array. If nothing found, return []."""
             try:
                 memories = json.loads(content)
                 if isinstance(memories, list):
-                    print(f"✅ Backup extraction found {len(memories)} memories")
                     return memories
             except json.JSONDecodeError:
-                print("❌ Failed to parse backup extraction JSON")
+                pass  # Failed to parse JSON
                 
         except Exception as e:
-            print(f"❌ Backup extraction failed: {e}")
+            pass  # Backup extraction failed
         
         return []
 
@@ -645,7 +590,6 @@ Return as JSON array. If nothing found, return []."""
         Emergency extraction for critical cases where main extraction failed completely.
         Uses keyword-based detection to ensure important information is not lost.
         """
-        print("🚨 EMERGENCY EXTRACTION - Using keyword detection")
         
         emergency_patterns = {
             "name": [r"my name is (\w+)", r"call me (\w+)", r"i'm (\w+)", r"i am (\w+)"],
@@ -676,11 +620,9 @@ Return as JSON array. If nothing found, return []."""
                             )
                             found_memories.append(f"{memory_type}: {match}")
                         except Exception as e:
-                            print(f"  ❌ Emergency memory creation failed: {e}")
+                            pass  # Emergency memory creation failed
         
         if found_memories:
-            print(f"🚨 EMERGENCY EXTRACTION SAVED {len(found_memories)} MEMORIES:")
-            for mem in found_memories:
-                print(f"   - {mem}")
+            pass  # Found memories but no action needed
         else:
-            print("🚨 Emergency extraction found no patterns")
+            pass  # No emergency memories found

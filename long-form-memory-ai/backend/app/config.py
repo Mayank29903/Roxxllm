@@ -7,16 +7,18 @@ class Settings(BaseSettings):
     # Application
     APP_NAME: str = "LongFormMemoryAI"
     DEBUG: bool = False
+    HOST: str = Field(default="0.0.0.0", alias="HOST")
+    PORT: int = Field(default=8000, alias="PORT")
 
     # MongoDB
     MONGODB_URL: str = Field(
-        default="mongodb://localhost:27017/longform_memory_ai",
+        default="mongodb://username:password@host:port/database",
         alias="MONGODB_URL"
     )
 
     # Redis (optional)
     REDIS_URL: str = Field(
-        default="redis://localhost:6379/0",
+        default="redis://username:password@host:port/database",
         alias="REDIS_URL"
     )
 
@@ -50,6 +52,12 @@ class Settings(BaseSettings):
     MAX_CONTEXT_TURNS: int = 10
     MEMORY_TOP_K: int = 5
     MEMORY_CONFIDENCE_THRESHOLD: float = 0.7
+
+    # CORS
+    CORS_ORIGINS: str = Field(
+        default="http://localhost:3000,https://yourdomain.com",
+        alias="CORS_ORIGINS"
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -13,7 +13,7 @@ class LLMService:
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "http://localhost:8000",
+            "HTTP-Referer": f"http://{settings.HOST}:{settings.PORT}",
             "X-Title": "LongFormMemoryAI",
         }
 
@@ -39,14 +39,6 @@ class LLMService:
         if top_p is not None:
             payload["top_p"] = top_p
 
-        # ---------- DEBUG: REQUEST ----------
-        print("\n========== LLM REQUEST ==========")
-        print("URL:", f"{self.base_url}/chat/completions")
-        print("MODEL:", self.model)
-        print("STREAM:", stream)
-        print("PAYLOAD:")
-        print(json.dumps(payload, indent=2))
-        print("=================================\n")
 
         try:
             async with httpx.AsyncClient(timeout=60) as client:
@@ -60,17 +52,14 @@ class LLMService:
                         json=payload,
                     ) as response:
 
-                        print("HTTP STATUS:", response.status_code)
                         response.raise_for_status()
 
                         async for line in response.aiter_lines():
                             if not line:
                                 continue
 
-                            print("RAW STREAM:", line)
 
                             if line.strip() == "data: [DONE]":
-                                print("STREAM DONE")
                                 break
 
                             if not line.startswith("data:"):
@@ -81,7 +70,6 @@ class LLMService:
                             try:
                                 chunk = json.loads(data)
                             except Exception as e:
-                                print("STREAM JSON ERROR:", e)
                                 continue
 
                             delta = (
@@ -104,17 +92,8 @@ class LLMService:
                         json=payload,
                     )
 
-                    print("HTTP STATUS:", response.status_code)
-                    print("\n========== RAW RESPONSE ==========")
-                    print(response.text)
-                    print("=================================\n")
-
                     response.raise_for_status()
                     result = response.json()
-
-                    print("\n========== PARSED RESPONSE ==========")
-                    print(json.dumps(result, indent=2))
-                    print("====================================\n")
 
                     text = (
                         result.get("choices", [{}])[0]
@@ -128,8 +107,6 @@ class LLMService:
                     }
 
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             yield {
                 "type": "error",
                 "content": f"LLM failure: {str(e)}"

@@ -41,6 +41,6 @@ class User(Document):
                 "is_active": True,
                 "auth_provider": "email",
                 "email_verified": True,
-                "avatar_url": "https://example.com/avatar.jpg"
+                "avatar_url": "https://your-domain.com/default-avatar.jpg"
             }
         }

@@ -11,12 +11,9 @@ from app.routers import user
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("Starting up Long-Form Memory AI...")
     await init_db()
-    print("MongoDB connected!")
     yield
     # Shutdown
-    print("Shutting down...")
     await close_db()
 
 
@@ -30,7 +27,7 @@ app = FastAPI(
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=settings.CORS_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
