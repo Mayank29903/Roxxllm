@@ -12,8 +12,8 @@ class Settings(BaseSettings):
 
     # MongoDB
     MONGODB_URL: str = Field(
-        default="mongodb://username:password@host:port/database",
-        alias="MONGODB_URL"
+    default="mongodb://localhost:27017/helixmind",
+    alias="MONGODB_URL"
     )
 
     # Redis (optional)
@@ -55,9 +55,9 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: str = Field(
-        default="http://localhost:3000,https://yourdomain.com",
-        alias="CORS_ORIGINS"
-    )
+    default="http://localhost:5173,http://localhost:3000",
+    alias="CORS_ORIGINS"
+)
 
     model_config = SettingsConfigDict(
         env_file=".env",
