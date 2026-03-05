@@ -8,7 +8,7 @@ from app.routers.auth import get_current_user_dependency
 from app.utils.memory_tester import MemoryTester
 from app.core.memory_extractor import MemoryExtractor
 
-router = APIRouter(prefix="/memory", tags=["memory"])
+router = APIRouter(tags=["memory"])
 
 
 @router.get("/")

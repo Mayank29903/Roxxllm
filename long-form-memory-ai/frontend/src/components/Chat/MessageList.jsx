@@ -296,7 +296,7 @@ const MessageList = ({ messages, streamingMessage, isLoading, scrollContainerRef
                 </div>
                 <div className="flex justify-start">
                   <div className="message-bubble message-bubble-ai">
-                    <div className="whitespace-pre-wrap leading-7 text-[var(--text-primary)]">
+                    <div className="whitespace-pre-wrap break-words leading-7 text-[var(--text-primary)]">
                       {liveStreamingText}
                     </div>
                   </div>

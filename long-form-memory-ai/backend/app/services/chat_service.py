@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, AsyncGenerator
 from datetime import datetime
+import re
 from fastapi import HTTPException
 from app.models.chat import Conversation, Message
 from app.services.llm_service import LLMService
@@ -90,6 +91,81 @@ class ChatService:
             truncated = truncated.rsplit(" ", 1)[0]
         return f"{truncated}..."
 
+    def _normalize_memory_text(self, value: str) -> str:
+        return re.sub(r"\s+", " ", (value or "").strip().lower())
+
+    def _is_useful_memory_candidate(self, memory: Dict[str, Any]) -> bool:
+        mem_type = self._normalize_memory_text(str(memory.get("type", "")))
+        key = self._normalize_memory_text(str(memory.get("key", "")))
+        value = self._normalize_memory_text(str(memory.get("value", "")))
+        confidence = float(memory.get("confidence", 0.0))
+        importance = float(memory.get("importance", 0.0))
+
+        if not mem_type or not key or not value:
+            return False
+
+        if confidence < 0.6 or importance < 0.55:
+            return False
+
+        task_specific_markers = [
+            "main function",
+            "single file",
+            "full code",
+            "write code",
+            "response format",
+            "output format",
+            "this task",
+            "this question",
+            "factorial",
+            "cpp",
+            "c++",
+            "python code",
+            "java code",
+        ]
+        blob = f"{mem_type} {key} {value}"
+        if any(marker in blob for marker in task_specific_markers):
+            return False
+
+        if mem_type in {"temporary_state"}:
+            return False
+
+        return True
+
+    def _dedupe_extracted_memories(self, extracted: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Deduplicate extracted memories by semantic value within each type.
+        Keeps the highest-scoring candidate for each (type, value) pair.
+        """
+        best_by_signature: Dict[tuple, Dict[str, Any]] = {}
+
+        for mem in extracted:
+            if not self._is_useful_memory_candidate(mem):
+                continue
+
+            mem_type = self._normalize_memory_text(str(mem.get("type", "")))
+            key = self._normalize_memory_text(str(mem.get("key", "")))
+            value = self._normalize_memory_text(str(mem.get("value", "")))
+            signature = (mem_type, value)
+
+            confidence = float(mem.get("confidence", 0.0))
+            importance = float(mem.get("importance", 0.0))
+            score = confidence + importance + min(len(key) / 100.0, 0.4)
+
+            current = best_by_signature.get(signature)
+            if not current:
+                best_by_signature[signature] = mem
+                continue
+
+            current_score = (
+                float(current.get("confidence", 0.0))
+                + float(current.get("importance", 0.0))
+                + min(len(self._normalize_memory_text(str(current.get("key", "")))) / 100.0, 0.4)
+            )
+            if score > current_score:
+                best_by_signature[signature] = mem
+
+        return list(best_by_signature.values())
+
     async def create_conversation(
         self,
         user_id: str,
@@ -161,7 +237,7 @@ class ChatService:
 
         messages = (
             await Message.find(Message.conversation_id == conversation_id)
-            .sort("+turn_number")
+            .sort("+created_at")
             .limit(limit)
             .to_list()
         )
@@ -242,7 +318,7 @@ class ChatService:
         # Build history
         history = await Message.find(
             Message.conversation_id == conversation_id
-        ).sort("+turn_number").to_list()
+        ).sort("+created_at").to_list()
 
         messages = [
             {"role": m.role, "content": m.content}
@@ -379,6 +455,7 @@ class ChatService:
 
 
         full_response = ""
+        llm_error = None
 
         async for event in self.llm_service.generate_response(
             messages=messages,
@@ -396,8 +473,14 @@ class ChatService:
                     }
 
             elif event["type"] == "error":
-                yield event
-                return
+                llm_error = event.get("content", "LLM generation failed")
+                break
+
+        if llm_error and not full_response.strip():
+            full_response = (
+                "I ran into an issue while generating a response. "
+                "Please try again in a moment."
+            )
 
 
         assistant_msg = Message(
@@ -444,13 +527,28 @@ class ChatService:
                     extracted.extend(backup_extracted)
                 
                 if extracted:
+                    extracted = self._dedupe_extracted_memories(extracted)
                     memories_stored = 0
+                    existing_signatures = {
+                        (
+                            self._normalize_memory_text(mem.memory_type),
+                            self._normalize_memory_text(mem.value)
+                        )
+                        for mem in memories
+                    }
                     
                     for mem in extracted:
                         try:
                             # Apply importance boost based on extraction priority
                             if extraction_decision.get("extraction_boost"):
                                 mem["importance"] = min(1.0, mem.get('importance', 0.5) + extraction_decision["extraction_boost"])
+
+                            signature = (
+                                self._normalize_memory_text(mem.get("type", "")),
+                                self._normalize_memory_text(mem.get("value", "")),
+                            )
+                            if signature in existing_signatures:
+                                continue
                             
                             
                             # Store in database
@@ -465,6 +563,7 @@ class ChatService:
                                 importance=mem.get('importance', 0.5),
                                 context=f"From conversation turn {conv.turn_count} (priority: {extraction_decision['priority']})"
                             )
+                            existing_signatures.add(signature)
                             memories_stored += 1
                             
                         except Exception as mem_error:
@@ -498,7 +597,8 @@ class ChatService:
             },
             "memory_metadata": {
                 "active_memories": active_memory_ids
-            }
+            },
+            "warning": llm_error
         }
 
     async def _backup_extraction(

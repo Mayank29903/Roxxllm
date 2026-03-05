@@ -26,11 +26,17 @@ export const chatService = {
   },
 
   sendMessageStream: async (conversationId, content, onChunk) => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      window.location.href = '/login'
+      throw new Error('Authentication required. Please log in again.')
+    }
+
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/chat/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
         conversation_id: conversationId,
@@ -38,6 +44,13 @@ export const chatService = {
         stream: true
       })
     })
+
+    if (response.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('authMethod')
+      window.location.href = '/login'
+      throw new Error('Authentication expired. Please log in again.')
+    }
 
     if (!response.ok || !response.body) {
       throw new Error(`Streaming request failed with status ${response.status}`)
@@ -48,6 +61,7 @@ export const chatService = {
     let fullMessage = ''
     let finalData = null
     let pending = ''
+    let streamError = null
 
     while (true) {
       const { done, value } = await reader.read()
@@ -68,35 +82,54 @@ export const chatService = {
               fullMessage += parsed.content
               onChunk(parsed.content)
             } else if (parsed.type === 'error') {
-              throw new Error(parsed.content || 'Streaming failed')
+              streamError = new Error(parsed.content || 'Streaming failed')
+              break
             } else if (parsed.type === 'complete') {
               finalData = parsed
             }
           } catch (e) {
-            console.error('Parse error:', e)
+            streamError = e instanceof Error ? e : new Error('Invalid streaming payload')
+            break
           }
         }
       }
+
+      if (streamError) break
     }
 
-    if (pending.startsWith('data: ')) {
+    if (!streamError && pending.startsWith('data: ')) {
       const data = pending.slice(6).trim()
       if (data && data !== '[DONE]') {
         try {
           const parsed = JSON.parse(data)
           if (parsed.type === 'error') {
-            throw new Error(parsed.content || 'Streaming failed')
+            streamError = new Error(parsed.content || 'Streaming failed')
           }
           if (parsed.type === 'complete') {
             finalData = parsed
           }
         } catch (e) {
-          console.error('Parse error:', e)
+          streamError = e instanceof Error ? e : new Error('Invalid streaming payload')
         }
       }
     }
 
-    return finalData || { message: { content: fullMessage } }
+    if (streamError) {
+      throw streamError
+    }
+
+    if (!finalData) {
+      throw new Error('Streaming ended without completion event')
+    }
+
+    if (!finalData.message?.content && fullMessage) {
+      finalData.message = {
+        ...(finalData.message || {}),
+        content: fullMessage
+      }
+    }
+
+    return finalData
   },
 
   deleteConversation: async (conversationId) => {
