@@ -1,4 +1,6 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import { FaBrain } from 'react-icons/fa'
 import {
   PlusIcon,
   ChatBubbleLeftRightIcon,
@@ -91,6 +93,25 @@ const Sidebar = ({
           <PlusIcon className="h-5 w-5" />
           {!collapsed && <span className="font-medium">New Chat</span>}
         </button>
+      </div>
+
+      <div className="px-2 md:px-3 pb-2">
+        <Link
+          to="/memory"
+          onClick={onCloseMobile}
+          className="sidebar-item flex items-center gap-2 min-w-0"
+          title={collapsed ? 'Memory Dashboard' : undefined}
+        >
+          <div className="h-9 w-9 rounded-lg surface-strong flex items-center justify-center shrink-0">
+            <FaBrain className="h-4 w-4 text-[var(--accent)]" />
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-sm font-semibold truncate">Memory</p>
+              <p className="text-xs text-secondary">Memory Dashboard</p>
+            </div>
+          )}
+        </Link>
       </div>
 
       <div className="flex-1 overflow-y-auto soft-scroll px-2 md:px-3 space-y-1.5">

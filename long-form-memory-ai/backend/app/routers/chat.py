@@ -8,7 +8,8 @@ from app.models.user import User
 from app.routers.auth import get_current_user_dependency
 from app.services.chat_service import ChatService
 
-router = APIRouter(prefix="/chat", tags=["chat"])
+router = APIRouter(tags=["chat"])
+
 chat_service = ChatService()
 
 
@@ -42,6 +43,7 @@ async def create_conversation(
         user_id=str(current_user.id),
         title=data.title
     )
+
     return {
         "id": str(conv.id),
         "title": conv.title,
@@ -73,11 +75,14 @@ async def send_message(
     data: MessageCreate,
     current_user: User = Depends(get_current_user_dependency),
 ):
+
+    # Create conversation automatically if not provided
     if not data.conversation_id:
         conv = await chat_service.create_conversation(str(current_user.id))
         data.conversation_id = str(conv.id)
 
     if data.stream:
+
         async def event_gen() -> AsyncGenerator[str, None]:
             async for event in chat_service.process_message(
                 user_id=str(current_user.id),
@@ -86,11 +91,14 @@ async def send_message(
                 stream=True
             ):
                 yield f"data: {json.dumps(event)}\n\n"
+
             yield "data: [DONE]\n\n"
 
-        response = StreamingResponse(event_gen(), media_type="text/event-stream")
+        return StreamingResponse(event_gen(), media_type="text/event-stream")
+
     else:
         result = None
+
         async for event in chat_service.process_message(
             user_id=str(current_user.id),
             conversation_id=data.conversation_id,
@@ -99,9 +107,7 @@ async def send_message(
         ):
             result = event
 
-        response = result
-
-    return response
+        return result
 
 
 @router.delete("/conversations/{conversation_id}")
@@ -113,4 +119,5 @@ async def delete_conversation(
         conversation_id=conversation_id,
         user_id=str(current_user.id)
     )
+
     return {"success": True}

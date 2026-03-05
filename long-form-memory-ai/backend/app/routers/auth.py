@@ -16,7 +16,7 @@ from app.config import settings
 from app.services.firebase_service import firebase_service
 from fastapi import HTTPException
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter(tags=["authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
@@ -41,7 +41,7 @@ class GoogleAuthRequest(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
-    refresh_token: Optional[str] = None
+    # refresh_token: Optional[str] = None
     user: UserResponse
 
 
