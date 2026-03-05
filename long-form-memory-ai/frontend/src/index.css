@@ -161,11 +161,11 @@
     --sidebar-item-title: #edf7ff;
     --sidebar-item-meta: #95a9bc;
 
-    --chat-bubble-user-bg: linear-gradient(135deg, #1ad7f2 0%, #109cbe 100%);
+    --chat-bubble-user-bg: linear-gradient(135deg, rgba(26, 215, 242, 0.38) 0%, rgba(16, 156, 190, 0.34) 100%);
     --chat-bubble-ai-bg: #101a34;
     --chat-bubble-border: color-mix(in srgb, #17cce9 34%, #1e3654);
     --chat-bubble-text: #e7f2fb;
-    --chat-bubble-user-text: #041823;
+    --chat-bubble-user-text: #dff8ff;
     --chat-bubble-ai-text: #d8e5f2;
   }
 
@@ -454,6 +454,26 @@
 
   .message-markdown > :last-child {
     margin-bottom: 0;
+  }
+
+  .message-markdown p,
+  .message-markdown li,
+  .message-markdown td,
+  .message-markdown th {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .message-markdown pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .message-markdown code {
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   .message-bubble-wrap {

@@ -56,8 +56,19 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await authService.getMe();
       setUser(userData);
-    } catch {
-      localStorage.removeItem("token");
+    } catch (err) {
+      const message = err?.message || "";
+      const isUnauthorized =
+        err?.response?.status === 401 ||
+        message.toLowerCase().includes("authentication expired");
+
+      if (isUnauthorized) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("authMethod");
+        setUser(null);
+      } else {
+        console.error("Failed to restore session:", err);
+      }
     } finally {
       setLoading(false);
     }

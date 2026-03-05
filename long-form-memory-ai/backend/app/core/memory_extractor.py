@@ -15,8 +15,13 @@ class MemoryExtractor:
     """Extracts structured memories from conversation turns using LLM."""
     
     def __init__(self):
-        pass
-        self.extraction_prompt = """You are a comprehensive memory extraction system. Extract ALL important information from the conversation that could be useful in future interactions. Be thorough and capture details that might seem minor but could be relevant later.
+        self.extraction_prompt = """You are a long-term memory extraction system. Extract only durable personal information that is likely to remain useful across future conversations.
+
+Keep only stable and user-centric memories, such as:
+- identity/background (name, work, studies, city, relationships)
+- lasting preferences (food, media tastes, language, routines)
+- long-term commitments/goals
+- explicit long-term assistant behavior preferences
 
 Extract memories in these categories:
 1. **preference**: User likes, dislikes, choices, favorites (language, style, timing, entertainment, food, etc.)
@@ -40,6 +45,12 @@ DETAILED EXTRACTION RULES:
 - Note professional/educational background details
 - Extract health information, dietary restrictions, allergies
 - Remember entertainment preferences in detail
+
+DO NOT EXTRACT:
+- one-off task instructions tied to the current query (e.g., "put all code in main", "answer in bullet points")
+- transient formatting requests, coding-output constraints, or short-lived workflow directions
+- content that is not about the user's personal profile/preferences
+- duplicate variants of the same preference/fact with different keys
 
 GENERAL PREFERENCE PATTERN EXAMPLES:
 - "In any anime, my favorite character is the main character" -> preference: favorite_anime_character_type = main character
@@ -115,6 +126,11 @@ Example:
             validated_memories = []
             for mem in memories:
                 if self._validate_memory(mem):
+                    mem["type"] = str(mem.get("type", "")).strip().lower()
+                    mem["key"] = str(mem.get("key", "")).strip().lower().replace(" ", "_")
+                    mem["value"] = str(mem.get("value", "")).strip()
+                    mem["confidence"] = float(mem.get("confidence", 0.0))
+                    mem["importance"] = float(mem.get("importance", 0.0))
                     mem['source_turn'] = turn_number
                     mem['extracted_at'] = datetime.utcnow().isoformat()
                     
@@ -122,8 +138,9 @@ Example:
                     if extraction_boost > 0:
                         mem['importance'] = min(1.0, mem.get('importance', 0.5) + extraction_boost)
                         print(f"   Applied extraction boost +{extraction_boost:.1f} to [{mem['type']}] {mem['key']}")
-                    
-                    validated_memories.append(mem)
+
+                    if self._is_useful_memory(mem):
+                        validated_memories.append(mem)
             
             # Special handling: If extraction was forced but nothing was found, try minimal extraction
             if extraction_boost >= 1.5 and not validated_memories:
@@ -162,6 +179,61 @@ Example:
         """Validate extracted memory structure."""
         required = ['type', 'key', 'value', 'confidence', 'importance']
         return all(field in memory for field in required)
+
+    def _normalize_text(self, value: str) -> str:
+        return re.sub(r"\s+", " ", (value or "").strip().lower())
+
+    def _is_task_specific_memory(self, memory: Dict[str, Any]) -> bool:
+        blob = self._normalize_text(
+            f"{memory.get('type', '')} {memory.get('key', '')} {memory.get('value', '')}"
+        )
+        task_specific_markers = [
+            "main function",
+            "single file",
+            "full code",
+            "write code",
+            "coding style",
+            "output format",
+            "response format",
+            "this task",
+            "this question",
+            "for this prompt",
+            "assistant response",
+            "factorial",
+            "cpp",
+            "c++",
+            "python code",
+            "java code",
+        ]
+        return any(marker in blob for marker in task_specific_markers)
+
+    def _is_useful_memory(self, memory: Dict[str, Any]) -> bool:
+        mem_type = self._normalize_text(memory.get("type", ""))
+        key = self._normalize_text(memory.get("key", ""))
+        value = self._normalize_text(memory.get("value", ""))
+        confidence = float(memory.get("confidence", 0.0))
+        importance = float(memory.get("importance", 0.0))
+
+        if not mem_type or not key or not value:
+            return False
+
+        if len(value) < 2:
+            return False
+
+        if value in {"yes", "no", "ok", "none", "na", "n/a"}:
+            return False
+
+        # Keep strong memories only.
+        if confidence < 0.6 or importance < 0.55:
+            return False
+
+        if self._is_task_specific_memory(memory):
+            return False
+
+        if mem_type in {"temporary_state"}:
+            return False
+
+        return True
     
     def should_extract(self, turn_number: int, user_message: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -222,30 +294,17 @@ Example:
             })
             return result
         
-        # PRIORITY 4: FREQUENCY-BASED EXTRACTION (Guaranteed Coverage)
-        # Much more frequent: Turn 1, every 2 turns, and every 10th turn
-        if turn_number == 1 or turn_number % 2 == 0 or turn_number % 10 == 0:
+        # PRIORITY 4: FREQUENCY-BASED EXTRACTION (light background coverage)
+        if turn_number == 1 or turn_number % 5 == 0:
             result.update({
                 "should_extract": True,
                 "reason": "frequency_based",
                 "priority": "low",
-                "extraction_boost": 0.5
+                "extraction_boost": 0.3
             })
             print(f"🔄 FREQUENCY EXTRACTION: Turn {turn_number}")
             return result
         
-        # PRIORITY 5: MEDIUM CONFIDENCE FALLBACK (Catch-all)
-        # Extract if message is longer than 20 words and contains personal pronouns
-        words = user_message.split()
-        if len(words) >= 20 and any(pronoun in message_lower for pronoun in ["i", "my", "me", "mine"]):
-            result.update({
-                "should_extract": True,
-                "reason": "fallback_heuristic",
-                "priority": "fallback",
-                "extraction_boost": 0.3
-            })
-            print(f"🎯 FALLBACK EXTRACTION: Turn {turn_number} ({len(words)} words)")
-            return result
         
         result["reason"] = "no_memory_signal"
         return result
@@ -279,11 +338,8 @@ Example:
             "i'm interested in", "passion", "my hobby",
             # Food and dietary
             "i eat", "i cook", "vegetarian", "vegan", "diet", "allergic",
-            # Opinions and feelings
-            "i think", "i feel", "i believe", "in my opinion", "to me",
-            # Temporary states and plans
-            "i'm planning", "i will", "i'm going to", "i want", "i need",
-            "looking forward", "excited about", "worried about"
+            # Long-term goals
+            "my goal", "i want to become", "i want to achieve", "long term"
         ]
 
         return any(signal in message for signal in signals)
@@ -352,3 +408,4 @@ Example:
                     print(f"   🎯 Minimal extraction: [{mem_type}] {key} = {match}")
         
         return minimal_memories
+
